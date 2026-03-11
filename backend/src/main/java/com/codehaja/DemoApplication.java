@@ -1,4 +1,4 @@
-package com.codehaja.demo;
+package com.codehaja;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
