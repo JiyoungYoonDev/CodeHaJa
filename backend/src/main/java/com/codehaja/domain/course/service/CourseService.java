@@ -80,7 +80,7 @@ public class CourseService {
 
     public CourseDto.Response getCourse(Long courseId) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.BOOK_NOT_FOUND, "Course not found."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND, "Course not found."));
 
         return courseMapper.toResponse(course);
     }
@@ -90,7 +90,7 @@ public class CourseService {
         validateUpdateRequest(request);
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.BOOK_NOT_FOUND, "Course not found."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND, "Course not found."));
 
         CourseCategory category = getCategoryOrThrow(request.getCategoryId());
 
@@ -104,7 +104,7 @@ public class CourseService {
     @Transactional
     public CourseDto.Response updateCourseStatus(Long courseId, CourseStatus status) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.BOOK_NOT_FOUND, "Course not found."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND, "Course not found."));
 
         if (status == null) {
             throw new BusinessException(ErrorCode.INVALID_INPUT, "Course status is required.");
@@ -117,7 +117,7 @@ public class CourseService {
     @Transactional
     public void deleteCourse(Long courseId) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.BOOK_NOT_FOUND, "Course not found."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND, "Course not found."));
 
         courseRepository.delete(course);
     }

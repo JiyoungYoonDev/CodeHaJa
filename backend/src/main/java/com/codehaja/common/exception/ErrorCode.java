@@ -14,12 +14,14 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY_404", "Category not found."),
     CATEGORY_ALREADY_EXISTS(HttpStatus.CONFLICT, "CATEGORY_409", "Category already exists."),
 
-    // ProblemBook
-    BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_404", "Book not found."),
+    // Course
+    COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "COURSE_404", "Course not found."),
 
     // CourseSection
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "SECTION_404", "Section not found."),
-
+    SECTION_ALREADY_EXISTS(HttpStatus.CONFLICT, "SECTION_409", "Section already exists."),
+    SECTION_REORDER_INVALID(HttpStatus.BAD_REQUEST, "SECTION_400", "Invalid section reorder."),
+    
     // Lecture
     LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "LECTURE_404", "Lecture not found."),
 

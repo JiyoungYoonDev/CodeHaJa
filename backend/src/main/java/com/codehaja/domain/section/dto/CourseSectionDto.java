@@ -1,0 +1,62 @@
+package com.codehaja.domain.section.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+
+public class CourseSectionDto {
+
+    @Getter
+    @Setter
+    public static class CreateRequest {
+        private String title;
+        private String description;
+        private Integer hours;
+        private Integer points;
+        private Integer sortOrder;
+    }
+
+    @Getter
+    @Setter
+    public static class UpdateRequest {
+        private String title;
+        private String description;
+        private Integer hours;
+        private Integer points;
+        private Integer sortOrder;
+    }
+
+    @Getter
+    @Setter
+    public static class SummaryResponse {
+        private Long id;
+        private Long courseId;
+        private String courseTitle;
+        private String title;
+        private String description;
+        private Integer hours;
+        private Integer points;
+        private Integer sortOrder;
+        private Long lectureCount;
+    }
+
+    @Getter
+    @Setter
+    public static class DetailResponse {
+        private Long id;
+        private Long courseId;
+        private String courseTitle;
+        private String title;
+        private String description;
+        private Integer hours;
+        private Integer points;
+        private Integer sortOrder;
+        private Long lectureCount;
+    }
+
+    @Getter
+    @Setter
+    public static class ReorderRequest {
+        private Long id;
+        private Integer sortOrder;
+    }
+}
