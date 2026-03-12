@@ -25,9 +25,10 @@ public enum ErrorCode {
     // Lecture
     LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "LECTURE_404", "Lecture not found."),
     LECTURE_REORDER_INVALID(HttpStatus.BAD_REQUEST, "LECTURE_400", "Invalid lecture reorder."),
-    
+
     // LectureItem
     LECTURE_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "LECTURE_ITEM_404", "Lecture item not found."),
+    LECTURE_ITEM_REORDER_INVALID(HttpStatus.BAD_REQUEST, "LECTURE_ITEM_400", "Invalid lecture item reorder."),
 
     // LectureItemEntry
     ENTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "ENTRY_404", "Lecture item entry not found.");
