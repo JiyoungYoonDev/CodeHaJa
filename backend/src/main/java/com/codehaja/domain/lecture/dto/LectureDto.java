@@ -1,0 +1,89 @@
+package com.codehaja.domain.lecture.dto;
+
+import com.codehaja.domain.lecture.entity.LectureType;
+import lombok.Getter;
+import lombok.Setter;
+import tools.jackson.databind.JsonNode;
+
+public class LectureDto {
+
+    @Getter
+    @Setter
+    public static class CreateRequest {
+        private String title;
+        private String description;
+        private JsonNode contentJson;
+        private Integer sortOrder;
+        private Integer durationMinutes;
+        private Boolean isPreview;
+        private Boolean isPublished;
+        private LectureType lectureType;
+    }
+
+    @Getter
+    @Setter
+    public static class UpdateRequest {
+        private String title;
+        private String description;
+        private JsonNode contentJson;
+        private Integer sortOrder;
+        private Integer durationMinutes;
+        private Boolean isPreview;
+        private Boolean isPublished;
+        private LectureType lectureType;
+    }
+
+    @Getter
+    @Setter
+    public static class SummaryResponse {
+        private Long id;
+        private Long courseSectionId;
+        private String courseSectionTitle;
+        private String title;
+        private String description;
+        private Integer sortOrder;
+        private Integer durationMinutes;
+        private Boolean isPreview;
+        private Boolean isPublished;
+        private LectureType lectureType;
+        private Long itemCount;
+    }
+
+    @Getter
+    @Setter
+    public static class DetailResponse {
+        private Long id;
+        private Long courseSectionId;
+        private String courseSectionTitle;
+        private Long courseId;
+        private String courseTitle;
+        private String title;
+        private String description;
+        private JsonNode contentJson;
+        private Integer sortOrder;
+        private Integer durationMinutes;
+        private Boolean isPreview;
+        private Boolean isPublished;
+        private LectureType lectureType;
+        private Long itemCount;
+    }
+
+    @Getter
+    @Setter
+    public static class ReorderRequest {
+        private Long id;
+        private Integer sortOrder;
+    }
+
+    @Getter
+    @Setter
+    public static class PreviewRequest {
+        private Boolean isPreview;
+    }
+
+    @Getter
+    @Setter
+    public static class PublishRequest {
+        private Boolean isPublished;
+    }
+}

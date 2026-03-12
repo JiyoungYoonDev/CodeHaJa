@@ -1,6 +1,6 @@
 package com.codehaja.domain.course.entity;
 
-import com.codehaja.common.config.JsonNodeConverter;
+import com.codehaja.common.converter.JsonNodeConverter;
 import com.codehaja.common.entity.BaseTimeEntity;
 import com.codehaja.domain.category.entity.CourseCategory;
 import tools.jackson.databind.JsonNode;
