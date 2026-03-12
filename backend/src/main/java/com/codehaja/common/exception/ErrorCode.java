@@ -31,8 +31,8 @@ public enum ErrorCode {
     LECTURE_ITEM_REORDER_INVALID(HttpStatus.BAD_REQUEST, "LECTURE_ITEM_400", "Invalid lecture item reorder."),
 
     // LectureItemEntry
-    ENTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "ENTRY_404", "Lecture item entry not found.");
-
+    ENTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "ENTRY_404", "Lecture item entry not found."),
+    ENTRY_REORDER_INVALID(HttpStatus.BAD_REQUEST, "ENTRY_400", "Invalid lecture item entry reorder.");
 
     private final HttpStatus status;
     private final String code;

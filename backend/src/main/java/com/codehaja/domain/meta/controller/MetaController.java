@@ -27,4 +27,31 @@ public class MetaController {
 
         return ResponseEntity.ok(ApiResponse.ok(data));
     }
+
+    @GetMapping("/api/meta/lecture-entry-types")
+    public ResponseEntity<ApiResponse<List<java.util.Map<String, String>>>> getLectureEntryTypes() {
+        List<java.util.Map<String, String>> data = List.of(
+                java.util.Map.of("value", "MULTIPLE_CHOICE", "label", "Multiple Choice"),
+                java.util.Map.of("value", "TRUE_FALSE", "label", "True / False"),
+                java.util.Map.of("value", "SHORT_ANSWER", "label", "Short Answer"),
+                java.util.Map.of("value", "CODING_CHALLENGE", "label", "Coding Challenge"),
+                java.util.Map.of("value", "SQL_QUERY", "label", "SQL Query"),
+                java.util.Map.of("value", "PROJECT_STEP", "label", "Project Step"),
+                java.util.Map.of("value", "CHECKPOINT", "label", "Checkpoint"),
+                java.util.Map.of("value", "TEST_QUESTION", "label", "Test Question")
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(data));
+    }
+
+    @GetMapping("/api/meta/access-levels")
+    public ResponseEntity<ApiResponse<List<java.util.Map<String, String>>>> getAccessLevels() {
+        List<java.util.Map<String, String>> data = List.of(
+                java.util.Map.of("value", "FREE", "label", "Free"),
+                java.util.Map.of("value", "LOGIN_REQUIRED", "label", "Login Required"),
+                java.util.Map.of("value", "PREMIUM", "label", "Premium")
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(data));
+    }
 }
