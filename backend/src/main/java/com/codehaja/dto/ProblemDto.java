@@ -3,8 +3,7 @@ import lombok.Getter;
 import lombok.Setter;
 import tools.jackson.databind.JsonNode;
 
-@Getter
-@Setter
+
 public class ProblemDto {
     @Getter
     @Setter

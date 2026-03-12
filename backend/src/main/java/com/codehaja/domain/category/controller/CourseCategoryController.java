@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.codehaja.common.api.ApiResponse;
 import com.codehaja.domain.category.dto.CourseCategoryDto;
-import com.codehaja.domain.category.dto.CourseCategoryDto.Response;
 import com.codehaja.domain.category.service.CourseCategoryService;
 
 import lombok.RequiredArgsConstructor;

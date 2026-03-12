@@ -1,6 +1,5 @@
 package com.codehaja.domain.category.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +16,6 @@ public class CourseCategoryDto {
     public static class Response {
         private Long id;
         private String categoryName;
-        private Long problemBookCount;
+        private Long courseCount;
     }
 }

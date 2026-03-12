@@ -15,6 +15,6 @@ public class CourseCategoryDto {
     public static class Response{
         private String categoryName;
         private Long id;
-        private Long problemBookCount;
+        private Long courseCount;
     }
 }

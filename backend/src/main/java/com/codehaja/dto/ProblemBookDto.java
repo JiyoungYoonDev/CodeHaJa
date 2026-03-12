@@ -1,6 +1,8 @@
 package com.codehaja.dto;
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 

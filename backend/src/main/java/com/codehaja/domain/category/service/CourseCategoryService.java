@@ -41,11 +41,15 @@ public class CourseCategoryService {
     }
 
     public List<CourseCategoryDto.Response> getAllCategories() {
-        List<CourseCategory> categories = courseCategoryRepository.findAll();
+        List<Object[]> rows = courseCategoryRepository.findAllWithCourseCount();
         List<CourseCategoryDto.Response> responseList = new ArrayList<>();
 
-        for (CourseCategory category : categories) {
-            responseList.add(toResponse(category, 0L));
+        for (Object[] row : rows) {
+            CourseCategoryDto.Response response = new CourseCategoryDto.Response();
+            response.setId(((Number) row[0]).longValue());
+            response.setCategoryName((String) row[1]);
+            response.setCourseCount(((Number) row[2]).longValue());
+            responseList.add(response);
         }
 
         return responseList;
@@ -89,11 +93,11 @@ public class CourseCategoryService {
         courseCategoryRepository.delete(category);
     }
 
-    private CourseCategoryDto.Response toResponse(CourseCategory category, Long problemBookCount) {
+    private CourseCategoryDto.Response toResponse(CourseCategory category, Long courseCount) {
         CourseCategoryDto.Response response = new CourseCategoryDto.Response();
         response.setId(category.getId());
         response.setCategoryName(category.getCategoryName());
-        response.setProblemBookCount(problemBookCount);
+        response.setCourseCount(courseCount);
 
         return response;
     }
