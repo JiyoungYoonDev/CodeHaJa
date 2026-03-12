@@ -25,9 +25,9 @@ public class ProblemsBook {
     @Column(name = "book_description", nullable = false, columnDefinition = "TEXT")
     private String bookDescription;
 
-    @ManyToOne
-    @JoinColumn(name = "course_category_id", nullable = false)
-    private CourseCategory courseCategory;
+    // @ManyToOne
+    // @JoinColumn(name = "course_category_id", nullable = false)
+    // private CourseCategory courseCategory;
 
     // @Column(name = "book_category", nullable = false, length = 100)
     // private String bookCategory;

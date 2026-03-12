@@ -3,14 +3,11 @@ package com.codehaja.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.codehaja.dto.ProblemBookDto;
-import com.codehaja.model.CourseCategory;
 import com.codehaja.model.CourseSection;
 import com.codehaja.model.ProblemsBook;
-import com.codehaja.repository.CourseCategoryRepository;
 import com.codehaja.repository.ProblemBookRepository;
 
 import jakarta.transaction.Transactional;
@@ -21,14 +18,13 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class ProblemBookService {
     private final ProblemBookRepository problemBookRepository;
-    private final CourseCategoryRepository courseCategoryRepository;
 
     @Transactional
     public ProblemBookDto.Response createProblemBook(ProblemBookDto.CreateRequest request) {
         ProblemsBook problemBook = new ProblemsBook();
         problemBook.setProblemTitle(request.getTitle());
         problemBook.setBookDescription(request.getBookDescription());
-        problemBook.setCourseCategory(resolveCourseCategory(request.getCourseCategory()));
+        // problemBook.setCourseCategory(resolveCourseCategory(request.getCourseCategory()));
         problemBook.setBookDifficulty(defaultIfBlank(request.getDifficulty()));
         problemBook.setRating(request.getRating());
         problemBook.setBookCount(0L);
@@ -72,16 +68,16 @@ public class ProblemBookService {
         return problemBookRepository.findById(id).map(List::of).orElseGet(List::of);
     }
 
-    public List<ProblemsBook> getProblemBooksByCategory(String category) {
-        return problemBookRepository.findByCourseCategory_CategoryNameIgnoreCase(category);
-    }
+    // public List<ProblemsBook> getProblemBooksByCategory(String category) {
+    //     return problemBookRepository.findByCourseCategory_CategoryNameIgnoreCase(category);
+    // }
 
     private ProblemBookDto.Response toResponse(ProblemsBook saved) {
         ProblemBookDto.Response response = new ProblemBookDto.Response();
         response.setId(saved.getId());
         response.setTitle(saved.getProblemTitle());
         response.setBookDescription(saved.getBookDescription());
-        response.setCourseCategory(saved.getCourseCategory() == null ? null : saved.getCourseCategory().getCategoryName());
+        // response.setCourseCategory(saved.getCourseCategory() == null ? null : saved.getCourseCategory().getCategoryName());
         response.setDifficulty(saved.getBookDifficulty());
         response.setRating(saved.getRating());
         response.setProjectsCount(saved.getBookProjectsCount());
@@ -119,19 +115,19 @@ public class ProblemBookService {
         return value == null || value.isBlank() ? "0" : value;
     }
 
-    private CourseCategory resolveCourseCategory(String categoryName) {
-        if (categoryName == null || categoryName.isBlank()) {
-            throw new IllegalArgumentException("Course category is required.");
-        }
+    // private CourseCategory resolveCourseCategory(String categoryName) {
+    //     if (categoryName == null || categoryName.isBlank()) {
+    //         throw new IllegalArgumentException("Course category is required.");
+    //     }
 
-        return courseCategoryRepository
-            .findByCategoryNameIgnoreCase(categoryName)
-            .orElseGet(() -> {
-                CourseCategory category = new CourseCategory();
-                category.setCategoryName(categoryName.trim());
-                return courseCategoryRepository.save(category);
-            });
-    }
+    //     return courseCategoryRepository
+    //         .findByCategoryNameIgnoreCase(categoryName)
+    //         .orElseGet(() -> {
+    //             CourseCategory category = new CourseCategory();
+    //             category.setCategoryName(categoryName.trim());
+    //             return courseCategoryRepository.save(category);
+    //         });
+    // }
 
     // public ProblemsBook getProblemBookByCategoryAndId(String category, Long id) {
     //     return problemBookRepository.findByProblemCategory(category).stream()

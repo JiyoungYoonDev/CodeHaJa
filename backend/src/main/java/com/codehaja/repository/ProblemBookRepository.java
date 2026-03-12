@@ -8,5 +8,5 @@ import com.codehaja.model.ProblemsBook;
 
 @Repository
 public interface ProblemBookRepository extends JpaRepository<ProblemsBook, Long> {
-    List<ProblemsBook> findByCourseCategory_CategoryNameIgnoreCase(String category);
+    // List<ProblemsBook> findByCourseCategory_CategoryNameIgnoreCase(String category);
 }

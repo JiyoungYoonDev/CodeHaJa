@@ -33,11 +33,11 @@ public class ProblemBookController {
         return ResponseEntity.ok(problemBooks);
     }
 
-    @GetMapping("/category/{category}")
-    public ResponseEntity<List<ProblemsBook>> getProblemBooksByCategory(@PathVariable String category) {
-        List<ProblemsBook> problemBooks = problemBookService.getProblemBooksByCategory(category);
-        return ResponseEntity.ok(problemBooks);
-    }
+    // @GetMapping("/category/{category}")
+    // public ResponseEntity<List<ProblemsBook>> getProblemBooksByCategory(@PathVariable String category) {
+    //     List<ProblemsBook> problemBooks = problemBookService.getProblemBooksByCategory(category);
+    //     return ResponseEntity.ok(problemBooks);
+    // }
 
     @GetMapping("/{bookId}")
     public ResponseEntity<ProblemsBook> getProblemBookById(@PathVariable Long bookId) {
