@@ -32,7 +32,15 @@ public enum ErrorCode {
 
     // LectureItemEntry
     ENTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "ENTRY_404", "Lecture item entry not found."),
-    ENTRY_REORDER_INVALID(HttpStatus.BAD_REQUEST, "ENTRY_400", "Invalid lecture item entry reorder.");
+    ENTRY_REORDER_INVALID(HttpStatus.BAD_REQUEST, "ENTRY_400", "Invalid lecture item entry reorder."),
+
+    // Anonymous
+    ANONYMOUS_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "ANON_404", "Anonymous user not found."),
+    
+    // Coding
+    CODING_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "CODING_404", "Coding draft not found."),
+    CODING_SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "CODING_404", "Coding submission not found.");
+
 
     private final HttpStatus status;
     private final String code;
