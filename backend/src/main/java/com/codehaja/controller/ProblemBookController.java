@@ -39,6 +39,15 @@ public class ProblemBookController {
         return ResponseEntity.ok(problemBooks);
     }
 
+    @GetMapping("/{bookId}")
+    public ResponseEntity<ProblemsBook> getProblemBookById(@PathVariable Long bookId) {
+        List<ProblemsBook> problemBooks = problemBookService.getProblemBooksById(bookId);
+        if (!problemBooks.isEmpty()) {
+            return ResponseEntity.ok(problemBooks.get(0));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
     @PostMapping
     public ResponseEntity<?> createProblemBook(@RequestBody ProblemBookDto.CreateRequest request) {
         try {

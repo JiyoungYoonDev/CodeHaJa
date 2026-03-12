@@ -1,4 +1,4 @@
-package com.codehaja.config;
+package com.codehaja.common.config;
 
 import jakarta.persistence.AttributeConverter;
 import tools.jackson.databind.JsonNode;

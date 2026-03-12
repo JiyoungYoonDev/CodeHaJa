@@ -1,5 +1,5 @@
 package com.codehaja.model;
-import com.codehaja.config.JsonNodeConverter;
+import com.codehaja.common.config.JsonNodeConverter;
 
 import jakarta.persistence.*;
 import lombok.Getter;

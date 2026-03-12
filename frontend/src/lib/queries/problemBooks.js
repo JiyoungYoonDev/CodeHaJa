@@ -1,14 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
+import { queryKeys } from '../query-keys';
+import { getCourseCategories, getProblemBooks } from '../../../services/get-service';
 
-const problemBookKeys = {
-  all: ['problemBooks'],
-};
-
-export function useProblemBooks() {
+export function useProblemBooks(options = {}) {
   return useQuery({
-    queryKey: problemBookKeys.all,
-    queryFn: () => apiFetch('/api/problem-books'),
+    queryKey: queryKeys.problemBooks,
+    queryFn: getProblemBooks,
+    ...options,
   });
 }
 
@@ -22,7 +21,7 @@ export function useCreateProblemBook() {
         body: JSON.stringify(payload),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: problemBookKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.problemBooks });
     },
   });
 }

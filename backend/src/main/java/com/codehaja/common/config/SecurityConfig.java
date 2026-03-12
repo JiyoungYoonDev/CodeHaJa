@@ -1,4 +1,4 @@
-package com.codehaja.config;
+package com.codehaja.common.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 

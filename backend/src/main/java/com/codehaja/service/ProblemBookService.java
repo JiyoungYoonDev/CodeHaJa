@@ -68,6 +68,10 @@ public class ProblemBookService {
         return problemBookRepository.findAll();
     }
 
+    public List<ProblemsBook> getProblemBooksById(Long id) {
+        return problemBookRepository.findById(id).map(List::of).orElseGet(List::of);
+    }
+
     public List<ProblemsBook> getProblemBooksByCategory(String category) {
         return problemBookRepository.findByCourseCategory_CategoryNameIgnoreCase(category);
     }

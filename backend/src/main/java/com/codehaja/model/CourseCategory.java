@@ -2,6 +2,7 @@ package com.codehaja.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,5 +18,6 @@ public class CourseCategory {
     private String categoryName;
 
     @OneToMany(mappedBy = "courseCategory")
+    @JsonIgnore
     private List<ProblemsBook> problemsBooks;
 }
