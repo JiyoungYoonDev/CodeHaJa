@@ -19,6 +19,9 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
     @EntityGraph(attributePaths = {"course"})
     List<CourseSection> findAllByCourseId(Long courseId);
 
+    @EntityGraph(attributePaths = {"course"})
+    void deleteAllByCourseId(Long courseId);
+    
     @Query("""
         SELECT COALESCE(MAX(cs.sortOrder), 0)
         FROM CourseSection cs

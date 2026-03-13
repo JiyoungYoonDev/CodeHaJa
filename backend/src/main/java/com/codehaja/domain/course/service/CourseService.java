@@ -1,6 +1,11 @@
 package com.codehaja.domain.course.service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +20,10 @@ import com.codehaja.domain.course.entity.CourseStatus;
 import com.codehaja.domain.course.entity.Difficulty;
 import com.codehaja.domain.course.mapper.CourseMapper;
 import com.codehaja.domain.course.repository.CourseRepository;
+import com.codehaja.domain.section.dto.CourseSectionDto;
+import com.codehaja.domain.section.entity.CourseSection;
+import com.codehaja.domain.section.mapper.CourseSectionMapper;
+import com.codehaja.domain.section.repository.CourseSectionRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +33,9 @@ import lombok.RequiredArgsConstructor;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final CourseCategoryRepository courseCategoryRepository;
+    private final CourseSectionRepository courseSectionRepository;
     private final CourseMapper courseMapper;
+    private final CourseSectionMapper courseSectionMapper;
 
     @Transactional
     public CourseDto.Response createCourse(CourseDto.CreateRequest request) {
@@ -37,6 +48,7 @@ public class CourseService {
         applyDefaults(course);
 
         Course saved = courseRepository.save(course);
+        // createSectionsIfProvided(saved, request.getSections());
         return courseMapper.toResponse(saved);
     }
 
@@ -78,13 +90,63 @@ public class CourseService {
                 .toList();
     }
 
-    public CourseDto.Response getCourse(Long courseId) {
+    public CourseDto.DetailResponse getCourse(Long courseId) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND, "Course not found."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND));
 
-        return courseMapper.toResponse(course);
+        CourseDto.DetailResponse response = courseMapper.toDetailResponse(course);
+
+        List<CourseSectionDto.SummaryResponse> sections =
+                courseSectionRepository.findAllByCourseIdOrderBySortOrderAsc(courseId)
+                        .stream()
+                        .map(courseSectionMapper::toSummaryResponse)
+                        .toList();
+
+        response.setSections(sections);
+        response.setTotalSections(sections.size());
+        response.setDetailedCurriculum(course.getDetailedCurriculum());
+        return response;
     }
 
+    private void replaceSections(Course course, List<CourseSectionDto.UpdateRequest> sections) {
+        courseSectionRepository.deleteAllByCourseId(course.getId());
+
+        if (sections == null || sections.isEmpty()) {
+            return;
+        }
+
+        List<CourseSection> entities = new ArrayList<>();
+        int fallbackOrder = 1;
+
+        for (CourseSectionDto.UpdateRequest request : sections) {
+            if (request == null) {
+                throw new BusinessException(ErrorCode.INVALID_INPUT, "Section payload is required.");
+            }
+
+            if (isBlank(request.getTitle())) {
+                throw new BusinessException(ErrorCode.INVALID_INPUT, "Section title is required.");
+            }
+
+            Integer sortOrder = request.getSortOrder();
+            if (sortOrder != null && sortOrder < 1) {
+                throw new BusinessException(ErrorCode.INVALID_INPUT, "Section sort order must be positive.");
+            }
+
+            CourseSection section = new CourseSection();
+            section.setCourse(course);
+            section.setTitle(request.getTitle());
+            section.setDescription(request.getDescription());
+            section.setHours(request.getHours() != null ? request.getHours() : 0);
+            section.setPoints(request.getPoints() != null ? request.getPoints() : 0);
+            section.setSortOrder(sortOrder != null ? sortOrder : fallbackOrder);
+
+            entities.add(section);
+
+            fallbackOrder++;
+        }
+
+        courseSectionRepository.saveAll(entities);
+    }
     @Transactional
     public CourseDto.Response updateCourse(Long courseId, CourseDto.UpdateRequest request) {
         validateUpdateRequest(request);
@@ -96,7 +158,10 @@ public class CourseService {
 
         courseMapper.updateEntityFromDto(request, course);
         course.setCategory(category);
+        course.setDetailedCurriculum(request.getDetailedCurriculum());
+
         applyDefaults(course);
+        replaceSections(course, request.getSections());
 
         return courseMapper.toResponse(course);
     }

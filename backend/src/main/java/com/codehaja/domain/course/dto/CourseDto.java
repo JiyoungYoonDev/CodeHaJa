@@ -1,7 +1,11 @@
 package com.codehaja.domain.course.dto;
 
+import java.util.List;
+
 import com.codehaja.domain.course.entity.CourseStatus;
 import com.codehaja.domain.course.entity.Difficulty;
+import com.codehaja.domain.section.dto.CourseSectionDto;
+
 import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +27,7 @@ public class CourseDto {
         private String imageUrl;
         private CourseStatus status;
         private JsonNode detailedCurriculum;
+        private List<CourseSectionDto.CreateRequest> sections;
     }
 
     @Getter
@@ -41,6 +46,7 @@ public class CourseDto {
         private String imageUrl;
         private CourseStatus status;
         private JsonNode detailedCurriculum;
+        private List<CourseSectionDto.UpdateRequest> sections;
     }
 
     @Getter
@@ -60,6 +66,27 @@ public class CourseDto {
         private String provider;
         private String imageUrl;
         private CourseStatus status;
+        private JsonNode detailedCurriculum;
+        private List<CourseSectionDto.SummaryResponse> sections;
+    }
+
+    @Getter
+    @Setter
+    public static class DetailResponse {
+        private Long id;
+        private String title;
+        private Long categoryId;
+        private String categoryName;
+        private Difficulty difficulty;
+        private String description;
+        private Integer hours;
+        private Integer points;
+        private Integer sortOrder;
+        private Long lectureCount;
+        private Integer totalSections;
+        private Integer projectsCount;
+        private CourseStatus status;
+        private List<CourseSectionDto.SummaryResponse> sections;
         private JsonNode detailedCurriculum;
     }
 }

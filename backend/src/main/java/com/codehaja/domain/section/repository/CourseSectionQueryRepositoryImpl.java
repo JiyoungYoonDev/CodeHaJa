@@ -59,7 +59,7 @@ public class CourseSectionQueryRepositoryImpl implements CourseSectionQueryRepos
             dto.setHours(row[5] == null ? 0 : ((Number) row[5]).intValue());
             dto.setPoints(row[6] == null ? 0 : ((Number) row[6]).intValue());
             dto.setSortOrder(row[7] == null ? 0 : ((Number) row[7]).intValue());
-            dto.setLectureCount(0L); // Lecture 도메인 추가 후 count join으로 확장
+            dto.setLectureCount(0L);
             return dto;
         }).toList();
 

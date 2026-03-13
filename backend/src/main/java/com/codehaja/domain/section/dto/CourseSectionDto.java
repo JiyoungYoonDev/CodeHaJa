@@ -18,6 +18,7 @@ public class CourseSectionDto {
     @Getter
     @Setter
     public static class UpdateRequest {
+        private Long id;
         private String title;
         private String description;
         private Integer hours;

@@ -57,12 +57,20 @@ public class CourseController {
     }
 
     @GetMapping("/{courseId}")
-    public ResponseEntity<ApiResponse<CourseDto.Response>> getCourse(
+    public ResponseEntity<ApiResponse<CourseDto.DetailResponse>> getCourse(
             @PathVariable Long courseId
     ) {
-        CourseDto.Response response = courseService.getCourse(courseId);
+        CourseDto.DetailResponse response = courseService.getCourse(courseId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
+
+    // @GetMapping("/detail/{courseId}")
+    // public ResponseEntity<ApiResponse<CourseDto.DetailResponse>> getCourseDetail(
+    //         @PathVariable Long courseId
+    // ) {
+    //     CourseDto.DetailResponse response = courseService.getCourse(courseId);
+    //     return ResponseEntity.ok(ApiResponse.ok(response));
+    // }
 
     @PutMapping("/{courseId}")
     public ResponseEntity<ApiResponse<CourseDto.Response>> updateCourse(

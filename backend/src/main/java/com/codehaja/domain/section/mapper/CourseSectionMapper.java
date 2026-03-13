@@ -1,5 +1,7 @@
 package com.codehaja.domain.section.mapper;
 
+import com.codehaja.domain.course.dto.CourseDto;
+import com.codehaja.domain.course.entity.Course;
 import com.codehaja.domain.section.dto.CourseSectionDto;
 import com.codehaja.domain.section.entity.CourseSection;
 import org.mapstruct.Mapper;
@@ -18,6 +20,12 @@ public interface CourseSectionMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     CourseSection toEntity(CourseSectionDto.CreateRequest request);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "course", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    CourseSection toEntity(CourseSectionDto.UpdateRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "course", ignore = true)
