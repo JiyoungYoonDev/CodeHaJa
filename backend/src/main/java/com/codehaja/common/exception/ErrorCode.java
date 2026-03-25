@@ -39,7 +39,14 @@ public enum ErrorCode {
     
     // Coding
     CODING_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "CODING_404", "Coding draft not found."),
-    CODING_SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "CODING_404", "Coding submission not found.");
+    CODING_SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "CODING_404", "Coding submission not found."),
+
+    // Auth
+    AUTH_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "AUTH_409", "Email already exists."),
+    AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH_401", "Invalid email or password."),
+    AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_TOKEN", "Invalid or expired token."),
+    AUTH_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_401_UNAUTH", "Authentication required."),
+    AUTH_ACCOUNT_BANNED(HttpStatus.FORBIDDEN, "AUTH_403", "Account is banned.");
 
 
     private final HttpStatus status;

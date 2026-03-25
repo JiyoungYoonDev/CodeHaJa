@@ -1,7 +1,9 @@
 package com.codehaja.domain.section.dto;
 
+import com.codehaja.domain.lecture.dto.LectureDto;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.List;
 
 public class CourseSectionDto {
 
@@ -38,6 +40,7 @@ public class CourseSectionDto {
         private Integer points;
         private Integer sortOrder;
         private Long lectureCount;
+        private List<LectureDto.SummaryResponse> lectures;
     }
 
     @Getter

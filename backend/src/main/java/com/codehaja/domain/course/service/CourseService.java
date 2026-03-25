@@ -20,6 +20,9 @@ import com.codehaja.domain.course.entity.CourseStatus;
 import com.codehaja.domain.course.entity.Difficulty;
 import com.codehaja.domain.course.mapper.CourseMapper;
 import com.codehaja.domain.course.repository.CourseRepository;
+import com.codehaja.domain.lecture.dto.LectureDto;
+import com.codehaja.domain.lecture.mapper.LectureMapper;
+import com.codehaja.domain.lecture.repository.LectureRepository;
 import com.codehaja.domain.section.dto.CourseSectionDto;
 import com.codehaja.domain.section.entity.CourseSection;
 import com.codehaja.domain.section.mapper.CourseSectionMapper;
@@ -34,8 +37,10 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final CourseCategoryRepository courseCategoryRepository;
     private final CourseSectionRepository courseSectionRepository;
+    private final LectureRepository lectureRepository;
     private final CourseMapper courseMapper;
     private final CourseSectionMapper courseSectionMapper;
+    private final LectureMapper lectureMapper;
 
     @Transactional
     public CourseDto.Response createCourse(CourseDto.CreateRequest request) {
@@ -99,7 +104,16 @@ public class CourseService {
         List<CourseSectionDto.SummaryResponse> sections =
                 courseSectionRepository.findAllByCourseIdOrderBySortOrderAsc(courseId)
                         .stream()
-                        .map(courseSectionMapper::toSummaryResponse)
+                        .map(section -> {
+                            CourseSectionDto.SummaryResponse sectionResponse = courseSectionMapper.toSummaryResponse(section);
+                            List<LectureDto.SummaryResponse> lectures =
+                                    lectureRepository.findAllByCourseSectionIdOrderBySortOrderAsc(section.getId())
+                                            .stream()
+                                            .map(lectureMapper::toSummaryResponse)
+                                            .toList();
+                            sectionResponse.setLectures(lectures);
+                            return sectionResponse;
+                        })
                         .toList();
 
         response.setSections(sections);
@@ -234,7 +248,7 @@ public class CourseService {
 
     private void applyDefaults(Course course) {
         if (course.getRating() == null) {
-            course.setRating(0);
+            course.setRating(0f);
         }
         if (course.getProjectsCount() == null) {
             course.setProjectsCount(0);

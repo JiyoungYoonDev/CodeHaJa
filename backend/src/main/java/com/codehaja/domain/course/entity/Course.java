@@ -33,7 +33,7 @@ public class Course extends BaseTimeEntity {
     @Column(nullable = false, length = 30)
     private Difficulty difficulty;
 
-    private Integer rating;
+    private Float rating;
 
     @Column(name = "projects_count")
     private Integer projectsCount;

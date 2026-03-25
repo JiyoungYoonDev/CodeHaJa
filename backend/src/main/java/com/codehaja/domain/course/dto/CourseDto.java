@@ -18,7 +18,7 @@ public class CourseDto {
         private String shortDescription;
         private Long categoryId;
         private Difficulty difficulty;
-        private Integer rating;
+        private Float rating;
         private Integer projectsCount;
         private Integer hours;
         private Integer learnersCount;
@@ -37,7 +37,7 @@ public class CourseDto {
         private String shortDescription;
         private Long categoryId;
         private Difficulty difficulty;
-        private Integer rating;
+        private Float rating;
         private Integer projectsCount;
         private Integer hours;
         private Integer learnersCount;
@@ -58,7 +58,7 @@ public class CourseDto {
         private Long categoryId;
         private String categoryName;
         private Difficulty difficulty;
-        private Integer rating;
+        private Float rating;
         private Integer projectsCount;
         private Integer hours;
         private Integer learnersCount;
@@ -77,6 +77,8 @@ public class CourseDto {
         private String title;
         private Long categoryId;
         private String categoryName;
+        private Float rating;
+        private Integer learnersCount;
         private Difficulty difficulty;
         private String description;
         private Integer hours;
