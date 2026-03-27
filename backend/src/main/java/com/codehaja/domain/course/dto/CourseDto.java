@@ -7,7 +7,6 @@ import com.codehaja.domain.course.entity.Difficulty;
 import com.codehaja.domain.section.dto.CourseSectionDto;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,7 +26,7 @@ public class CourseDto {
         private String provider;
         private String imageUrl;
         private CourseStatus status;
-        private JsonNode detailedCurriculum;
+        private String detailedCurriculum;
         private List<CourseSectionDto.CreateRequest> sections;
     }
 
@@ -46,7 +45,7 @@ public class CourseDto {
         private String provider;
         private String imageUrl;
         private CourseStatus status;
-        private JsonNode detailedCurriculum;
+        private String detailedCurriculum;
         private List<CourseSectionDto.UpdateRequest> sections;
     }
 
@@ -67,7 +66,8 @@ public class CourseDto {
         private String provider;
         private String imageUrl;
         private CourseStatus status;
-        private JsonNode detailedCurriculum;
+        @JsonRawValue
+        private String detailedCurriculum;
         private List<CourseSectionDto.SummaryResponse> sections;
     }
 

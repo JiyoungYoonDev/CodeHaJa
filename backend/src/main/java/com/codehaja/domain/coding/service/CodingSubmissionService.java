@@ -133,7 +133,7 @@ public class CodingSubmissionService {
         response.setExecutionTimeMs(submission.getExecutionTimeMs());
         response.setStdout(submission.getStdout());
         response.setStderr(submission.getStderr());
-        response.setResultJson(submission.getResultJson());
+        response.setResultJson(submission.getResultJson() != null ? submission.getResultJson().toString() : null);
         return response;
     }
 }

@@ -1,9 +1,9 @@
 package com.codehaja.domain.lecture.dto;
 
 import com.codehaja.domain.lecture.entity.LectureType;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import lombok.Getter;
 import lombok.Setter;
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class LectureDto {
 
@@ -12,7 +12,7 @@ public class LectureDto {
     public static class CreateRequest {
         private String title;
         private String description;
-        private JsonNode contentJson;
+        private String contentJson;
         private Integer sortOrder;
         private Integer durationMinutes;
         private Boolean isPreview;
@@ -25,7 +25,7 @@ public class LectureDto {
     public static class UpdateRequest {
         private String title;
         private String description;
-        private JsonNode contentJson;
+        private String contentJson;
         private Integer sortOrder;
         private Integer durationMinutes;
         private Boolean isPreview;
@@ -60,7 +60,8 @@ public class LectureDto {
         private String courseTitle;
         private String title;
         private String description;
-        private JsonNode contentJson;
+        @JsonRawValue
+        private String contentJson;
         private Integer sortOrder;
         private Integer durationMinutes;
         private Boolean isPreview;

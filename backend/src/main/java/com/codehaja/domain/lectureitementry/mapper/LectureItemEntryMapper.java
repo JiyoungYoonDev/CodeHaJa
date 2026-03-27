@@ -1,5 +1,7 @@
 package com.codehaja.domain.lectureitementry.mapper;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.codehaja.domain.lectureitementry.dto.LectureItemEntryDto;
 import com.codehaja.domain.lectureitementry.entity.LectureItemEntry;
 import org.mapstruct.Mapper;
@@ -17,13 +19,24 @@ public interface LectureItemEntryMapper {
     @Mapping(target = "lectureItem", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "contentJson", expression = "java(parseJson(request.getContentJson()))")
     LectureItemEntry toEntity(LectureItemEntryDto.CreateRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "lectureItem", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "contentJson", expression = "java(parseJson(request.getContentJson()))")
     void updateEntityFromDto(LectureItemEntryDto.UpdateRequest request, @MappingTarget LectureItemEntry entry);
+
+    default JsonNode parseJson(String json) {
+        if (json == null || json.isBlank()) return null;
+        try {
+            return new ObjectMapper().readTree(json);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     @Mapping(target = "lectureItemId", source = "lectureItem.id")
     @Mapping(target = "lectureItemTitle", source = "lectureItem.title")

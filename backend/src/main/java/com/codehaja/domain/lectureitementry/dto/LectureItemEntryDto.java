@@ -2,9 +2,9 @@ package com.codehaja.domain.lectureitementry.dto;
 
 import com.codehaja.domain.lectureitementry.entity.AccessLevel;
 import com.codehaja.domain.lectureitementry.entity.LectureItemEntryType;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import lombok.Getter;
 import lombok.Setter;
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class LectureItemEntryDto {
 
@@ -14,7 +14,7 @@ public class LectureItemEntryDto {
         private String title;
         private LectureItemEntryType entryType;
         private String prompt;
-        private JsonNode contentJson;
+        private String contentJson;
         private Integer sortOrder;
         private Integer points;
         private Boolean isRequired;
@@ -28,7 +28,7 @@ public class LectureItemEntryDto {
         private String title;
         private LectureItemEntryType entryType;
         private String prompt;
-        private JsonNode contentJson;
+        private String contentJson;
         private Integer sortOrder;
         private Integer points;
         private Boolean isRequired;
@@ -69,7 +69,8 @@ public class LectureItemEntryDto {
         private String title;
         private LectureItemEntryType entryType;
         private String prompt;
-        private JsonNode contentJson;
+        @JsonRawValue
+        private String contentJson;
         private Integer sortOrder;
         private Integer points;
         private Boolean isRequired;

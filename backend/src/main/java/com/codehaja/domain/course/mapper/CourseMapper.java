@@ -1,5 +1,7 @@
 package com.codehaja.domain.course.mapper;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -10,18 +12,29 @@ import com.codehaja.domain.course.entity.Course;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CourseMapper {
-    
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "detailedCurriculum", expression = "java(parseJson(request.getDetailedCurriculum()))")
     Course toEntity(CourseDto.CreateRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "detailedCurriculum", expression = "java(parseJson(request.getDetailedCurriculum()))")
     void updateEntityFromDto(CourseDto.UpdateRequest request, @MappingTarget Course course);
+
+    default JsonNode parseJson(String json) {
+        if (json == null || json.isBlank()) return null;
+        try {
+            return new ObjectMapper().readTree(json);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     @Mapping(target = "categoryId", source = "category.id")
     @Mapping(target = "categoryName", source = "category.categoryName")

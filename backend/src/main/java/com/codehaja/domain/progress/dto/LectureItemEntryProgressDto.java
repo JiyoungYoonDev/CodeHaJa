@@ -1,9 +1,9 @@
 package com.codehaja.domain.progress.dto;
 
 import com.codehaja.domain.progress.entity.ProgressStatus;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import lombok.Getter;
 import lombok.Setter;
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class LectureItemEntryProgressDto {
 
@@ -13,7 +13,7 @@ public class LectureItemEntryProgressDto {
         private ProgressStatus status;
         private Boolean isCorrect;
         private Integer score;
-        private JsonNode answerJson;
+        private String answerJson;
     }
 
     @Getter
@@ -24,6 +24,7 @@ public class LectureItemEntryProgressDto {
         private ProgressStatus status;
         private Boolean isCorrect;
         private Integer score;
-        private JsonNode answerJson;
+        @JsonRawValue
+        private String answerJson;
     }
 }

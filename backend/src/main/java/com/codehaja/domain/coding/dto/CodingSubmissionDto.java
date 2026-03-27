@@ -1,8 +1,8 @@
 package com.codehaja.domain.coding.dto;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import lombok.Getter;
 import lombok.Setter;
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class CodingSubmissionDto {
 
@@ -26,6 +26,7 @@ public class CodingSubmissionDto {
         private Long executionTimeMs;
         private String stdout;
         private String stderr;
-        private JsonNode resultJson;
+        @JsonRawValue
+        private String resultJson;
     }
 }
