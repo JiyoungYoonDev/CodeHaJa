@@ -38,11 +38,16 @@ public interface LectureMapper {
         }
     }
 
+    default String map(JsonNode value) {
+        return value != null ? value.toString() : null;
+    }
+
     @Mapping(target = "courseSectionId", source = "courseSection.id")
     @Mapping(target = "courseSectionTitle", source = "courseSection.title")
     @Mapping(target = "courseId", source = "courseSection.course.id")
     @Mapping(target = "courseTitle", source = "courseSection.course.title")
     @Mapping(target = "itemCount", expression = "java(0L)")
+    @Mapping(target = "contentJson", expression = "java(map(lecture.getContentJson()))")
     LectureDto.DetailResponse toDetailResponse(Lecture lecture);
 
     @Mapping(target = "courseSectionId", source = "courseSection.id")

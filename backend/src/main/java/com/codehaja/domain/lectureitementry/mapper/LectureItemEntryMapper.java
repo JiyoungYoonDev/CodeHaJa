@@ -38,6 +38,10 @@ public interface LectureItemEntryMapper {
         }
     }
 
+    default String map(JsonNode value) {
+        return value != null ? value.toString() : null;
+    }
+
     @Mapping(target = "lectureItemId", source = "lectureItem.id")
     @Mapping(target = "lectureItemTitle", source = "lectureItem.title")
     @Mapping(target = "lectureId", source = "lectureItem.lecture.id")
@@ -46,6 +50,7 @@ public interface LectureItemEntryMapper {
     @Mapping(target = "courseSectionTitle", source = "lectureItem.lecture.courseSection.title")
     @Mapping(target = "courseId", source = "lectureItem.lecture.courseSection.course.id")
     @Mapping(target = "courseTitle", source = "lectureItem.lecture.courseSection.course.title")
+    @Mapping(target = "contentJson", expression = "java(map(entry.getContentJson()))")
     LectureItemEntryDto.DetailResponse toDetailResponse(LectureItemEntry entry);
 
     @Mapping(target = "lectureItemId", source = "lectureItem.id")

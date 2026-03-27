@@ -36,8 +36,13 @@ public interface CourseMapper {
         }
     }
 
+    default String map(JsonNode value) {
+        return value != null ? value.toString() : null;
+    }
+
     @Mapping(target = "categoryId", source = "category.id")
     @Mapping(target = "categoryName", source = "category.categoryName")
+    @Mapping(target = "detailedCurriculum", expression = "java(map(course.getDetailedCurriculum()))")
     CourseDto.Response toResponse(Course course);
     
     @Mapping(target = "categoryId", source = "category.id")
