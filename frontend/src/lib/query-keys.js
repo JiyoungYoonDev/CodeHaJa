@@ -1,6 +1,9 @@
 export const queryKeys = {
-  problemBooks: ['problem-books'],
-  problemBook: (bookId) => ['problem-books', bookId],
+  courses: ['courses'],
+  courseList: (categoryId) => ['courses', categoryId ?? 'all'],
   courseCategories: ['course-categories'],
   courseCategory: (categoryId) => ['course-categories', categoryId],
+  sectionLectures: (sectionId) => ['section-lectures', sectionId],
+  entryProgress: (entryId, userKey) => ['entry-progress', entryId, userKey],
+  lectureProgress: (lectureId, userKey) => ['lecture-progress', lectureId, userKey],
 };

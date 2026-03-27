@@ -9,6 +9,7 @@ import com.codehaja.domain.lectureitem.entity.LectureItem;
 import com.codehaja.domain.lectureitem.entity.LectureItemType;
 import com.codehaja.domain.lectureitem.mapper.LectureItemMapper;
 import com.codehaja.domain.lectureitem.repository.LectureItemRepository;
+import com.codehaja.domain.lectureitementry.repository.LectureItemEntryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +28,7 @@ public class LectureItemService {
 
     private final LectureRepository lectureRepository;
     private final LectureItemRepository lectureItemRepository;
+    private final LectureItemEntryRepository lectureItemEntryRepository;
     private final LectureItemMapper lectureItemMapper;
 
     @Transactional
@@ -57,7 +59,15 @@ public class LectureItemService {
         int safeSize = normalizePageSize(size);
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
-        return lectureItemRepository.searchLectureItems(lectureId, keyword, itemType, pageable);
+        Page<LectureItemDto.SummaryResponse> result =
+                lectureItemRepository.searchLectureItems(lectureId, keyword, itemType, pageable);
+
+        result.getContent().forEach(item ->
+                lectureItemEntryRepository.findFirstByLectureItemIdOrderBySortOrderAsc(item.getId())
+                        .ifPresent(entry -> item.setFirstEntryId(entry.getId()))
+        );
+
+        return result;
     }
 
     public LectureItemDto.DetailResponse getLectureItem(Long lectureItemId) {

@@ -4,12 +4,13 @@ import com.codehaja.domain.progress.entity.ProgressStatus;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 public class LectureProgressDto {
 
     @Getter
     @Setter
     public static class SaveRequest {
-        private String anonymousUserKey;
         private ProgressStatus status;
         private Integer currentItemOrder;
         private Integer currentEntryOrder;
@@ -23,5 +24,15 @@ public class LectureProgressDto {
         private ProgressStatus status;
         private Integer currentItemOrder;
         private Integer currentEntryOrder;
+    }
+
+    @Getter
+    @Setter
+    public static class CourseSummary {
+        private List<Long> completedLectureIds;
+
+        public CourseSummary(List<Long> completedLectureIds) {
+            this.completedLectureIds = completedLectureIds;
+        }
     }
 }

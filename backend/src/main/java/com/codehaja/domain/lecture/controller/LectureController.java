@@ -49,6 +49,15 @@ public class LectureController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @GetMapping("/api/course-sections/{courseSectionId}/lectures/{lectureId}")
+    public ResponseEntity<ApiResponse<LectureDto.DetailResponse>> getLectureBySection(
+            @PathVariable Long courseSectionId,
+            @PathVariable Long lectureId
+    ) {
+        LectureDto.DetailResponse response = lectureService.getLecture(lectureId);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
     @PutMapping("/api/lectures/{lectureId}")
     public ResponseEntity<ApiResponse<LectureDto.DetailResponse>> updateLecture(
             @PathVariable Long lectureId,

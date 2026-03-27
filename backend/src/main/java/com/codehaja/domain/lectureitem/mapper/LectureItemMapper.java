@@ -2,9 +2,11 @@ package com.codehaja.domain.lectureitem.mapper;
 
 import com.codehaja.domain.lectureitem.dto.LectureItemDto;
 import com.codehaja.domain.lectureitem.entity.LectureItem;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(
@@ -19,6 +21,7 @@ public interface LectureItemMapper {
     @Mapping(target = "updatedAt", ignore = true)
     LectureItem toEntity(LectureItemDto.CreateRequest request);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "lecture", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -32,6 +35,7 @@ public interface LectureItemMapper {
     @Mapping(target = "courseId", source = "lecture.courseSection.course.id")
     @Mapping(target = "courseTitle", source = "lecture.courseSection.course.title")
     @Mapping(target = "entryCount", expression = "java(0L)")
+    @Mapping(target = "contentJson", expression = "java(lectureItem.getContentJson() != null ? lectureItem.getContentJson().toString() : null)")
     LectureItemDto.DetailResponse toDetailResponse(LectureItem lectureItem);
 
     @Mapping(target = "lectureId", source = "lecture.id")

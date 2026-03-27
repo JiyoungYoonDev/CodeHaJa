@@ -1,9 +1,9 @@
 package com.codehaja.domain.progress.service;
 
+import com.codehaja.auth.entity.User;
+import com.codehaja.auth.repository.UserRepository;
 import com.codehaja.common.exception.BusinessException;
 import com.codehaja.common.exception.ErrorCode;
-import com.codehaja.domain.anonymous.entity.AnonymousUser;
-import com.codehaja.domain.anonymous.service.AnonymousUserService;
 import com.codehaja.domain.lecture.entity.Lecture;
 import com.codehaja.domain.lecture.repository.LectureRepository;
 import com.codehaja.domain.lectureitementry.entity.LectureItemEntry;
@@ -20,35 +20,34 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProgressService {
 
-    private final AnonymousUserService anonymousUserService;
+    private final UserRepository userRepository;
     private final LectureRepository lectureRepository;
     private final LectureItemEntryRepository lectureItemEntryRepository;
     private final LectureProgressRepository lectureProgressRepository;
     private final LectureItemEntryProgressRepository lectureItemEntryProgressRepository;
 
     @Transactional
-    public LectureProgressDto.Response saveLectureProgress(Long lectureId, LectureProgressDto.SaveRequest request) {
-        validateLectureProgressRequest(request);
-
-        AnonymousUser anonymousUser = anonymousUserService.getAnonymousUserOrThrow(request.getAnonymousUserKey());
+    public LectureProgressDto.Response saveLectureProgress(Long lectureId, LectureProgressDto.SaveRequest request, String userEmail) {
+        User user = getUser(userEmail);
 
         Lecture lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
 
         LectureProgress progress = lectureProgressRepository
-                .findByAnonymousUserIdAndLectureId(anonymousUser.getId(), lectureId)
+                .findByUserIdAndLectureId(user.getId(), lectureId)
                 .orElseGet(() -> {
-                    LectureProgress newProgress = new LectureProgress();
-                    newProgress.setAnonymousUser(anonymousUser);
-                    newProgress.setLecture(lecture);
-                    newProgress.setStatus(ProgressStatus.NOT_STARTED);
-                    return newProgress;
+                    LectureProgress p = new LectureProgress();
+                    p.setUser(user);
+                    p.setLecture(lecture);
+                    p.setStatus(ProgressStatus.NOT_STARTED);
+                    return p;
                 });
 
         progress.setStatus(request.getStatus() == null ? ProgressStatus.IN_PROGRESS : request.getStatus());
@@ -61,52 +60,32 @@ public class ProgressService {
         }
 
         LectureProgress saved = lectureProgressRepository.save(progress);
-
-        LectureProgressDto.Response response = new LectureProgressDto.Response();
-        response.setId(saved.getId());
-        response.setLectureId(saved.getLecture().getId());
-        response.setStatus(saved.getStatus());
-        response.setCurrentItemOrder(saved.getCurrentItemOrder());
-        response.setCurrentEntryOrder(saved.getCurrentEntryOrder());
-        return response;
+        return toResponse(saved);
     }
 
-    public LectureProgressDto.Response getLectureProgress(Long lectureId, String anonymousUserKey) {
-        AnonymousUser anonymousUser = anonymousUserService.getAnonymousUserOrThrow(anonymousUserKey);
-
-        LectureProgress progress = lectureProgressRepository
-                .findByAnonymousUserIdAndLectureId(anonymousUser.getId(), lectureId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Lecture progress not found."));
-
-        LectureProgressDto.Response response = new LectureProgressDto.Response();
-        response.setId(progress.getId());
-        response.setLectureId(progress.getLecture().getId());
-        response.setStatus(progress.getStatus());
-        response.setCurrentItemOrder(progress.getCurrentItemOrder());
-        response.setCurrentEntryOrder(progress.getCurrentEntryOrder());
-        return response;
+    public LectureProgressDto.Response getLectureProgress(Long lectureId, String userEmail) {
+        User user = getUser(userEmail);
+        return lectureProgressRepository
+                .findByUserIdAndLectureId(user.getId(), lectureId)
+                .map(this::toResponse)
+                .orElse(null);
     }
 
     @Transactional
-    public LectureItemEntryProgressDto.Response saveEntryProgress(
-            Long lectureItemEntryId,
-            LectureItemEntryProgressDto.SaveRequest request
-    ) {
-        validateEntryProgressRequest(request);
-
-        AnonymousUser anonymousUser = anonymousUserService.getAnonymousUserOrThrow(request.getAnonymousUserKey());
+    public LectureItemEntryProgressDto.Response saveEntryProgress(Long lectureItemEntryId, LectureItemEntryProgressDto.SaveRequest request, String userEmail) {
+        User user = getUser(userEmail);
 
         LectureItemEntry entry = lectureItemEntryRepository.findById(lectureItemEntryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ENTRY_NOT_FOUND));
 
         LectureItemEntryProgress progress = lectureItemEntryProgressRepository
-                .findByAnonymousUserIdAndLectureItemEntryId(anonymousUser.getId(), lectureItemEntryId)
+                .findByUserIdAndLectureItemEntryId(user.getId(), lectureItemEntryId)
                 .orElseGet(() -> {
-                    LectureItemEntryProgress newProgress = new LectureItemEntryProgress();
-                    newProgress.setAnonymousUser(anonymousUser);
-                    newProgress.setLectureItemEntry(entry);
-                    newProgress.setStatus(ProgressStatus.NOT_STARTED);
-                    return newProgress;
+                    LectureItemEntryProgress p = new LectureItemEntryProgress();
+                    p.setUser(user);
+                    p.setLectureItemEntry(entry);
+                    p.setStatus(ProgressStatus.NOT_STARTED);
+                    return p;
                 });
 
         progress.setStatus(request.getStatus() == null ? ProgressStatus.IN_PROGRESS : request.getStatus());
@@ -120,49 +99,53 @@ public class ProgressService {
         }
 
         LectureItemEntryProgress saved = lectureItemEntryProgressRepository.save(progress);
-
-        LectureItemEntryProgressDto.Response response = new LectureItemEntryProgressDto.Response();
-        response.setId(saved.getId());
-        response.setLectureItemEntryId(saved.getLectureItemEntry().getId());
-        response.setStatus(saved.getStatus());
-        response.setIsCorrect(saved.getIsCorrect());
-        response.setScore(saved.getScore());
-        response.setAnswerJson(saved.getAnswerJson());
-        return response;
+        return toEntryResponse(saved);
     }
 
-    public LectureItemEntryProgressDto.Response getEntryProgress(Long lectureItemEntryId, String anonymousUserKey) {
-        AnonymousUser anonymousUser = anonymousUserService.getAnonymousUserOrThrow(anonymousUserKey);
+    public LectureItemEntryProgressDto.Response getEntryProgress(Long lectureItemEntryId, String userEmail) {
+        User user = getUser(userEmail);
 
         LectureItemEntryProgress progress = lectureItemEntryProgressRepository
-                .findByAnonymousUserIdAndLectureItemEntryId(anonymousUser.getId(), lectureItemEntryId)
+                .findByUserIdAndLectureItemEntryId(user.getId(), lectureItemEntryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Entry progress not found."));
 
-        LectureItemEntryProgressDto.Response response = new LectureItemEntryProgressDto.Response();
-        response.setId(progress.getId());
-        response.setLectureItemEntryId(progress.getLectureItemEntry().getId());
-        response.setStatus(progress.getStatus());
-        response.setIsCorrect(progress.getIsCorrect());
-        response.setScore(progress.getScore());
-        response.setAnswerJson(progress.getAnswerJson());
-        return response;
+        return toEntryResponse(progress);
     }
 
-    private void validateLectureProgressRequest(LectureProgressDto.SaveRequest request) {
-        if (request == null) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT, "Request body is required.");
-        }
-        if (request.getAnonymousUserKey() == null || request.getAnonymousUserKey().isBlank()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT, "anonymousUserKey is required.");
-        }
+    public LectureProgressDto.CourseSummary getCourseLectureProgress(Long courseId, String userEmail) {
+        User user = getUser(userEmail);
+        List<Long> completedIds = lectureProgressRepository
+                .findByUserIdAndLecture_CourseSection_CourseId(user.getId(), courseId)
+                .stream()
+                .filter(p -> p.getStatus() == ProgressStatus.COMPLETED)
+                .map(p -> p.getLecture().getId())
+                .toList();
+        return new LectureProgressDto.CourseSummary(completedIds);
     }
 
-    private void validateEntryProgressRequest(LectureItemEntryProgressDto.SaveRequest request) {
-        if (request == null) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT, "Request body is required.");
-        }
-        if (request.getAnonymousUserKey() == null || request.getAnonymousUserKey().isBlank()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT, "anonymousUserKey is required.");
-        }
+    private User getUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));
+    }
+
+    private LectureProgressDto.Response toResponse(LectureProgress p) {
+        LectureProgressDto.Response r = new LectureProgressDto.Response();
+        r.setId(p.getId());
+        r.setLectureId(p.getLecture().getId());
+        r.setStatus(p.getStatus());
+        r.setCurrentItemOrder(p.getCurrentItemOrder());
+        r.setCurrentEntryOrder(p.getCurrentEntryOrder());
+        return r;
+    }
+
+    private LectureItemEntryProgressDto.Response toEntryResponse(LectureItemEntryProgress p) {
+        LectureItemEntryProgressDto.Response r = new LectureItemEntryProgressDto.Response();
+        r.setId(p.getId());
+        r.setLectureItemEntryId(p.getLectureItemEntry().getId());
+        r.setStatus(p.getStatus());
+        r.setIsCorrect(p.getIsCorrect());
+        r.setScore(p.getScore());
+        r.setAnswerJson(p.getAnswerJson());
+        return r;
     }
 }

@@ -1,7 +1,7 @@
 package com.codehaja.domain.progress.entity;
 
+import com.codehaja.auth.entity.User;
 import com.codehaja.common.entity.BaseTimeEntity;
-import com.codehaja.domain.anonymous.entity.AnonymousUser;
 import com.codehaja.domain.lecture.entity.Lecture;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "lecture_progress",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_lecture_progress_user_lecture", columnNames = {"anonymous_user_id", "lecture_id"})
+                @UniqueConstraint(name = "uk_lecture_progress_user_lecture", columnNames = {"user_id", "lecture_id"})
         }
 )
 @Getter
@@ -24,9 +24,9 @@ public class LectureProgress extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "anonymous_user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    private AnonymousUser anonymousUser;
+    private User user;
 
     @JoinColumn(name = "lecture_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)

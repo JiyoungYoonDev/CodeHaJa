@@ -4,7 +4,7 @@ import com.codehaja.domain.lectureitementry.entity.AccessLevel;
 import com.codehaja.domain.lectureitementry.entity.LectureItemEntryType;
 import lombok.Getter;
 import lombok.Setter;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class LectureItemEntryDto {
 

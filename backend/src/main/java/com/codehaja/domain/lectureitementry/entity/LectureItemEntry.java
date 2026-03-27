@@ -6,7 +6,7 @@ import com.codehaja.domain.lectureitem.entity.LectureItem;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
 @Table(name = "lecture_item_entries")

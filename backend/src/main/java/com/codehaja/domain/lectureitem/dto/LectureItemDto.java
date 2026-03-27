@@ -3,7 +3,8 @@ package com.codehaja.domain.lectureitem.dto;
 import com.codehaja.domain.lectureitem.entity.LectureItemType;
 import lombok.Getter;
 import lombok.Setter;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 
 public class LectureItemDto {
 
@@ -44,6 +45,7 @@ public class LectureItemDto {
         private Integer points;
         private Boolean isRequired;
         private Long entryCount;
+        private Long firstEntryId;
     }
 
     @Getter
@@ -59,7 +61,8 @@ public class LectureItemDto {
         private String title;
         private LectureItemType itemType;
         private String description;
-        private JsonNode contentJson;
+        @JsonRawValue
+        private String contentJson;
         private Integer sortOrder;
         private Integer points;
         private Boolean isRequired;

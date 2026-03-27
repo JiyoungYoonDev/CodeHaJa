@@ -3,7 +3,7 @@ package com.codehaja.domain.lecture.dto;
 import com.codehaja.domain.lecture.entity.LectureType;
 import lombok.Getter;
 import lombok.Setter;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class LectureDto {
 
@@ -47,6 +47,7 @@ public class LectureDto {
         private Boolean isPublished;
         private LectureType lectureType;
         private Long itemCount;
+        private Long firstItemId;
     }
 
     @Getter

@@ -6,6 +6,8 @@ import com.codehaja.domain.progress.dto.LectureProgressDto;
 import com.codehaja.domain.progress.service.ProgressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,40 +20,45 @@ public class ProgressController {
     @PutMapping("/lectures/{lectureId}")
     public ResponseEntity<ApiResponse<LectureProgressDto.Response>> saveLectureProgress(
             @PathVariable Long lectureId,
-            @RequestBody LectureProgressDto.SaveRequest request
-    ) {
-        LectureProgressDto.Response response = progressService.saveLectureProgress(lectureId, request);
+            @RequestBody LectureProgressDto.SaveRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        LectureProgressDto.Response response = progressService.saveLectureProgress(lectureId, request, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok("Lecture progress saved successfully.", response));
     }
 
     @GetMapping("/lectures/{lectureId}")
     public ResponseEntity<ApiResponse<LectureProgressDto.Response>> getLectureProgress(
             @PathVariable Long lectureId,
-            @RequestParam String anonymousUserKey
-    ) {
-        LectureProgressDto.Response response = progressService.getLectureProgress(lectureId, anonymousUserKey);
+            @AuthenticationPrincipal UserDetails userDetails) {
+        LectureProgressDto.Response response = progressService.getLectureProgress(lectureId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @PutMapping("/entries/{entryId}")
     public ResponseEntity<ApiResponse<LectureItemEntryProgressDto.Response>> saveEntryProgress(
             @PathVariable("entryId") Long lectureItemEntryId,
-            @RequestBody LectureItemEntryProgressDto.SaveRequest request
-    ) {
+            @RequestBody LectureItemEntryProgressDto.SaveRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
         LectureItemEntryProgressDto.Response response =
-                progressService.saveEntryProgress(lectureItemEntryId, request);
-
+                progressService.saveEntryProgress(lectureItemEntryId, request, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok("Entry progress saved successfully.", response));
     }
 
     @GetMapping("/entries/{entryId}")
     public ResponseEntity<ApiResponse<LectureItemEntryProgressDto.Response>> getEntryProgress(
             @PathVariable("entryId") Long lectureItemEntryId,
-            @RequestParam String anonymousUserKey
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         LectureItemEntryProgressDto.Response response =
-                progressService.getEntryProgress(lectureItemEntryId, anonymousUserKey);
+                progressService.getEntryProgress(lectureItemEntryId, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
 
+    @GetMapping("/courses/{courseId}/lectures")
+    public ResponseEntity<ApiResponse<LectureProgressDto.CourseSummary>> getCourseLectureProgress(
+            @PathVariable Long courseId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        LectureProgressDto.CourseSummary response =
+                progressService.getCourseLectureProgress(courseId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }

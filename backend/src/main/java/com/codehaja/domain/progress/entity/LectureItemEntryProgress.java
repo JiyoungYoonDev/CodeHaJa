@@ -1,13 +1,13 @@
 package com.codehaja.domain.progress.entity;
 
+import com.codehaja.auth.entity.User;
 import com.codehaja.common.converter.JsonNodeConverter;
 import com.codehaja.common.entity.BaseTimeEntity;
-import com.codehaja.domain.anonymous.entity.AnonymousUser;
 import com.codehaja.domain.lectureitementry.entity.LectureItemEntry;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "lecture_item_entry_progress",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_entry_progress_user_entry", columnNames = {"anonymous_user_id", "lecture_item_entry_id"})
+                @UniqueConstraint(name = "uk_entry_progress_user_entry", columnNames = {"user_id", "lecture_item_entry_id"})
         }
 )
 @Getter
@@ -26,9 +26,9 @@ public class LectureItemEntryProgress extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "anonymous_user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    private AnonymousUser anonymousUser;
+    private User user;
 
     @JoinColumn(name = "lecture_item_entry_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)

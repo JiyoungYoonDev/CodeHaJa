@@ -1,7 +1,5 @@
 package com.codehaja.domain.section.mapper;
 
-import com.codehaja.domain.course.dto.CourseDto;
-import com.codehaja.domain.course.entity.Course;
 import com.codehaja.domain.section.dto.CourseSectionDto;
 import com.codehaja.domain.section.entity.CourseSection;
 import org.mapstruct.Mapper;
