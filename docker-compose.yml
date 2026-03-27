@@ -35,6 +35,7 @@ services:
       APP_COOKIE_SECURE: "true"
       APP_COOKIE_SAME_SITE: "None"
       PISTON_BASE_URL: http://piston:2000
+      APP_CORS_EXTRA_ORIGINS: ${CORS_EXTRA_ORIGINS:}
 
   frontend:
     build:

@@ -1,7 +1,9 @@
 package com.codehaja.common.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -11,19 +13,24 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
-    private static final List<String> ALLOWED_ORIGIN_PATTERNS = List.of(
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://localhost:*",
-            "http://172.27.160.1:*",
-            "http://100.110.147.82:*",
-            "http://3.236.173.141:*"
-    );
+    @Value("${app.cors.extra-origins:}")
+    private String extraOrigins;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        List<String> allowedOrigins = new ArrayList<>(List.of(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:*"
+        ));
+        if (extraOrigins != null && !extraOrigins.isBlank()) {
+            for (String origin : extraOrigins.split(",")) {
+                allowedOrigins.add(origin.strip());
+            }
+        }
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(ALLOWED_ORIGIN_PATTERNS);
+        configuration.setAllowedOriginPatterns(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
