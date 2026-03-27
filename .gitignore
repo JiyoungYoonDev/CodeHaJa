@@ -8,3 +8,6 @@
 .env.prod
 .env.local
 .env.*.local
+
+# Judge0 sensitive config (contains DB/Redis passwords)
+judge0/**/judge0.conf
