@@ -16,7 +16,8 @@ public class CorsConfig {
             "http://localhost:3001",
             "http://localhost:*",
             "http://172.27.160.1:*",
-            "http://100.110.147.82:*"
+            "http://100.110.147.82:*",
+            "http://3.236.173.141:*"
     );
 
     @Bean
