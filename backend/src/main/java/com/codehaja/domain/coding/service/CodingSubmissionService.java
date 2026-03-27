@@ -105,6 +105,13 @@ public class CodingSubmissionService {
                 .stream().findFirst().map(this::toResponse).orElse(null);
     }
 
+    public List<Long> getPassedItemIds(Long courseId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));
+        return codingSubmissionRepository.findDistinctLectureItemIdsByUserIdAndStatusAndCourseId(
+                user.getId(), SubmissionStatus.PASSED, courseId);
+    }
+
     public List<CodingSubmissionDto.Response> getSubmissions(Long lectureItemId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));

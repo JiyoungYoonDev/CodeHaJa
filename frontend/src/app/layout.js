@@ -1,11 +1,10 @@
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist_Mono, DM_Sans } from 'next/font/google';
 import Providers from './providers';
+import Navbar from '@/components/common/navbar';
+import ThemeScript from '@/components/common/ThemeScript';
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+const sans = DM_Sans({ subsets: ['latin'] });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
@@ -19,11 +18,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang='en'>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang='en' suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
+      <body className={`${sans.className} font-sans antialiased`}>
         <Providers>
+          <Navbar />
           {children}
           <footer className='p-10 text-center text-gray-400'>
             © 2026 CodeHaja. All rights reserved.

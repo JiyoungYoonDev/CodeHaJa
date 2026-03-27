@@ -7,7 +7,7 @@ import { getCourseCategories } from '../../services/get-service';
 export function useCourseCategoriesQuery(options = {}) {
   return useQuery({
     queryKey: queryKeys.courseCategories,
-    queryFn: getCourseCategories,
+    queryFn: getCourseCategories, 
     ...options,
   });
 }

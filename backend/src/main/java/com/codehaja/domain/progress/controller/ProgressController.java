@@ -53,6 +53,22 @@ public class ProgressController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @PostMapping("/items/{itemId}")
+    public ResponseEntity<ApiResponse<Void>> saveItemProgress(
+            @PathVariable Long itemId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        progressService.saveItemProgress(itemId, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok("Item progress saved.", null));
+    }
+
+    @GetMapping("/courses/{courseId}/completed-item-count")
+    public ResponseEntity<ApiResponse<Long>> getCompletedItemCount(
+            @PathVariable Long courseId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        long count = progressService.getCompletedItemCount(courseId, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(count));
+    }
+
     @GetMapping("/courses/{courseId}/lectures")
     public ResponseEntity<ApiResponse<LectureProgressDto.CourseSummary>> getCourseLectureProgress(
             @PathVariable Long courseId,

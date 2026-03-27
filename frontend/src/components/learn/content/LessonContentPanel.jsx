@@ -19,8 +19,8 @@ export default function LessonContentPanel({ item }) {
   const description = tiptapHtml || item?.description || null;
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('[LessonContentPanel] item.contentJson:', item?.contentJson);
-    console.log('[LessonContentPanel] tiptapDoc:', tiptapDoc, '| tiptapHtml:', tiptapHtml, '| description:', description);
+    // console.log('[LessonContentPanel] item.contentJson:', item?.contentJson);
+    // console.log('[LessonContentPanel] tiptapDoc:', tiptapDoc, '| tiptapHtml:', tiptapHtml, '| description:', description);
   }
 
   return (

@@ -9,7 +9,7 @@ export default function LessonRating() {
 
   return (
     <div className='mt-8 border border-[#2a2a3e] rounded-xl p-5'>
-      <p className='text-sm text-[#9090a8] text-center mb-4'>이번 레슨은 어땠나요?</p>
+      <p className='text-sm text-[#9090a8] text-center mb-4'>How was this lesson?</p>
       <div className='flex items-center justify-center gap-4'>
         <button
           onClick={() => setRating('up')}
@@ -21,6 +21,7 @@ export default function LessonRating() {
           )}
         >
           <ThumbsUp size={15} />
+          <span>Like</span>
         </button>
         <div className='w-px h-5 bg-[#2a2a3e]' />
         <button
@@ -33,6 +34,7 @@ export default function LessonRating() {
           )}
         >
           <ThumbsDown size={15} />
+          <span>Dislike</span>
         </button>
       </div>
     </div>

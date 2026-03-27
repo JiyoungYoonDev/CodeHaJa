@@ -2,18 +2,13 @@ import { apiFetch } from '@/lib/api-client';
 
 const COURSE_CATEGORIES_PATH = process.env.NEXT_PUBLIC_API_COURSE_CATEGORIES;
 
-const COURSE_BOOKS = process.env.NEXT_PUBLIC_API_BOOKS;
+const COURSE = process.env.NEXT_PUBLIC_API_COURSES;
 
-export const getProblemBooks = async () => {
-    const data = await apiFetch(COURSE_BOOKS);
-    console.log("CORRECT DATA ? ", data)
-    return data;
-};
-
-export const getProblemBook = async (bookId) => {
-  return apiFetch(`${COURSE_BOOKS}/${bookId}`);
+export const getCoursesByCourseId = async (courseId) => {
+  return apiFetch(`${COURSE}/${courseId}`);
 };
 
 export const getCourseCategories = async () => {
-  return apiFetch(COURSE_CATEGORIES_PATH);
+  const response = await apiFetch(COURSE_CATEGORIES_PATH);
+  return Array.isArray(response) ? response : (response.data ?? []);
 };

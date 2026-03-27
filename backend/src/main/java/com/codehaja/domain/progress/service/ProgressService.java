@@ -6,14 +6,18 @@ import com.codehaja.common.exception.BusinessException;
 import com.codehaja.common.exception.ErrorCode;
 import com.codehaja.domain.lecture.entity.Lecture;
 import com.codehaja.domain.lecture.repository.LectureRepository;
+import com.codehaja.domain.lectureitem.entity.LectureItem;
+import com.codehaja.domain.lectureitem.repository.LectureItemRepository;
 import com.codehaja.domain.lectureitementry.entity.LectureItemEntry;
 import com.codehaja.domain.lectureitementry.repository.LectureItemEntryRepository;
 import com.codehaja.domain.progress.dto.LectureItemEntryProgressDto;
 import com.codehaja.domain.progress.dto.LectureProgressDto;
 import com.codehaja.domain.progress.entity.LectureItemEntryProgress;
+import com.codehaja.domain.progress.entity.LectureItemProgress;
 import com.codehaja.domain.progress.entity.LectureProgress;
 import com.codehaja.domain.progress.entity.ProgressStatus;
 import com.codehaja.domain.progress.repository.LectureItemEntryProgressRepository;
+import com.codehaja.domain.progress.repository.LectureItemProgressRepository;
 import com.codehaja.domain.progress.repository.LectureProgressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,8 +33,10 @@ public class ProgressService {
 
     private final UserRepository userRepository;
     private final LectureRepository lectureRepository;
+    private final LectureItemRepository lectureItemRepository;
     private final LectureItemEntryRepository lectureItemEntryRepository;
     private final LectureProgressRepository lectureProgressRepository;
+    private final LectureItemProgressRepository lectureItemProgressRepository;
     private final LectureItemEntryProgressRepository lectureItemEntryProgressRepository;
 
     @Transactional
@@ -110,6 +116,33 @@ public class ProgressService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Entry progress not found."));
 
         return toEntryResponse(progress);
+    }
+
+    @Transactional
+    public void saveItemProgress(Long itemId, String userEmail) {
+        User user = getUser(userEmail);
+        LectureItem item = lectureItemRepository.findById(itemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
+
+        LectureItemProgress progress = lectureItemProgressRepository
+                .findByUserIdAndLectureItemId(user.getId(), itemId)
+                .orElseGet(() -> {
+                    LectureItemProgress p = new LectureItemProgress();
+                    p.setUser(user);
+                    p.setLectureItem(item);
+                    return p;
+                });
+
+        if (progress.getCompletedAt() == null) {
+            progress.setCompletedAt(LocalDateTime.now());
+            lectureItemProgressRepository.save(progress);
+        }
+    }
+
+    public long getCompletedItemCount(Long courseId, String userEmail) {
+        User user = getUser(userEmail);
+        return lectureItemProgressRepository
+                .countByUserIdAndCompletedAtIsNotNullAndLectureItem_Lecture_CourseSection_CourseId(user.getId(), courseId);
     }
 
     public LectureProgressDto.CourseSummary getCourseLectureProgress(Long courseId, String userEmail) {

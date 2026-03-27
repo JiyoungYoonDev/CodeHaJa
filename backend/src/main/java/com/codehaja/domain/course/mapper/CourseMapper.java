@@ -31,5 +31,6 @@ public interface CourseMapper {
     @Mapping(target = "categoryName", source = "category.categoryName")
     @Mapping(target = "sections", ignore = true)
     @Mapping(target = "totalSections", ignore = true)
+    @Mapping(target = "detailedCurriculum", ignore = true)
     CourseDto.DetailResponse toDetailResponse(Course course);
 }

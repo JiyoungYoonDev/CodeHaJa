@@ -46,10 +46,12 @@ function ItemTypeBadge({ itemType }) {
   );
 }
 
-function LectureItemRow({ item, courseId, sectionId, activeItemId, visitedItemIds, lectureCompleted }) {
+function LectureItemRow({ item, courseId, sectionId, activeItemId, visitedItemIds, passedItemIds, lectureCompleted }) {
   const router = useRouter();
   const isActive = item.id === activeItemId;
-  const isVisited = lectureCompleted || (visitedItemIds?.has(item.id) ?? false);
+  const isVisited = item.itemType === 'CODING_SET'
+    ? (passedItemIds?.has(item.id) ?? false)
+    : (lectureCompleted || (visitedItemIds?.has(item.id) ?? false));
 
   function handleClick() {
     router.push(`/learn/${courseId}/${sectionId}?itemId=${item.id}`);
@@ -75,7 +77,7 @@ function LectureItemRow({ item, courseId, sectionId, activeItemId, visitedItemId
   );
 }
 
-function SectionBlock({ section, courseId, activeLectureId, activeItemId, visitedLectureIds, visitedItemIds }) {
+function SectionBlock({ section, courseId, activeLectureId, activeItemId, visitedLectureIds, visitedItemIds, passedItemIds }) {
   const isCurrentSection = section.lectures?.some(
     (l) => l.id === activeLectureId,
   );
@@ -105,6 +107,7 @@ function SectionBlock({ section, courseId, activeLectureId, activeItemId, visite
             activeItemId={activeItemId}
             visitedLectureIds={visitedLectureIds}
             visitedItemIds={visitedItemIds}
+            passedItemIds={passedItemIds}
           />
         ))}
     </div>
@@ -119,6 +122,7 @@ function LectureBlock({
   activeItemId,
   visitedLectureIds,
   visitedItemIds,
+  passedItemIds,
 }) {
   const isActive = lecture.id === activeLectureId;
   const isVisited = visitedLectureIds?.has(lecture.id) ?? false;
@@ -156,6 +160,7 @@ function LectureBlock({
               sectionId={sectionId}
               activeItemId={activeItemId}
               visitedItemIds={visitedItemIds}
+              passedItemIds={passedItemIds}
               lectureCompleted={isVisited}
             />
           ))}
@@ -171,6 +176,7 @@ export default function LearnSidebar({
   activeItemId,
   visitedLectureIds,
   visitedItemIds,
+  passedItemIds,
   onClose,
 }) {
   const { data: courseResponse } = useCourseDetailQuery(courseId);
@@ -207,6 +213,7 @@ export default function LearnSidebar({
             activeItemId={activeItemId}
             visitedLectureIds={visitedLectureIds}
             visitedItemIds={visitedItemIds}
+            passedItemIds={passedItemIds}
           />
         ))}
       </div>

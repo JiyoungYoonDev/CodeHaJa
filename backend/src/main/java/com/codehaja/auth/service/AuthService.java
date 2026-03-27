@@ -141,9 +141,18 @@ public class AuthService {
         return toMeResponse(user);
     }
 
-    public void logout(HttpServletResponse response) {
-        clearCookie("access_token", response);
-        clearCookie("refresh_token", response);
+    @Transactional
+    public void logout(String refreshToken, HttpServletResponse response) {
+        clearCookie("access_token", "/", response);
+        clearCookie("refresh_token", "/api/auth/refresh", response);
+        if (refreshToken != null && jwtService.isTokenValid(refreshToken)) {
+            String email = jwtService.extractEmail(refreshToken);
+            userRepository.findByEmail(email).ifPresent(user -> {
+                user.setRefreshTokenHash(null);
+                user.setRefreshTokenExpiresAt(null);
+                userRepository.save(user);
+            });
+        }
     }
 
     public AuthDto.MeResponse getMe(String email) {
@@ -204,13 +213,13 @@ public class AuthService {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    private void clearCookie(String name, HttpServletResponse response) {
+    private void clearCookie(String name, String path, HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from(name, "")
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .sameSite(cookieSameSite)
                 .maxAge(Duration.ZERO)
-                .path("/")
+                .path(path)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }

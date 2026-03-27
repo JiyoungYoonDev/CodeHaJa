@@ -33,6 +33,8 @@ public interface LectureItemRepository extends JpaRepository<LectureItem, Long>,
 
     Optional<LectureItem> findFirstByLectureIdOrderBySortOrderAsc(Long lectureId);
 
+    long countByLectureId(Long lectureId);
+
     @Query("""
         SELECT COALESCE(MAX(li.sortOrder), 0)
         FROM LectureItem li

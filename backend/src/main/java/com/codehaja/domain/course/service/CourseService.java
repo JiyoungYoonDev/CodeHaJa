@@ -111,6 +111,7 @@ public class CourseService {
                                                 LectureDto.SummaryResponse lr = lectureMapper.toSummaryResponse(lecture);
                                                 lectureItemRepository.findFirstByLectureIdOrderBySortOrderAsc(lecture.getId())
                                                         .ifPresent(item -> lr.setFirstItemId(item.getId()));
+                                                lr.setItemCount(lectureItemRepository.countByLectureId(lecture.getId()));
                                                 return lr;
                                             })
                                             .toList();
@@ -121,7 +122,7 @@ public class CourseService {
 
         response.setSections(sections);
         response.setTotalSections(sections.size());
-        response.setDetailedCurriculum(course.getDetailedCurriculum());
+        response.setDetailedCurriculum(course.getDetailedCurriculum() != null ? course.getDetailedCurriculum().toString() : null);
         return response;
     }
 

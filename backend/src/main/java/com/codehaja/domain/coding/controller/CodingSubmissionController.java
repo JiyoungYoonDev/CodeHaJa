@@ -46,6 +46,15 @@ public class CodingSubmissionController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @GetMapping("/course/{courseId}/passed-items")
+    public ResponseEntity<ApiResponse<List<Long>>> getPassedItemIds(
+            @PathVariable Long courseId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        List<Long> ids = codingSubmissionService.getPassedItemIds(courseId, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(ids));
+    }
+
     @GetMapping("/item/{lectureItemId}/latest")
     public ResponseEntity<ApiResponse<CodingSubmissionDto.Response>> getLatestSubmission(
             @PathVariable Long lectureItemId,
