@@ -47,7 +47,8 @@ public enum ErrorCode {
     AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH_401", "Invalid email or password."),
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_TOKEN", "Invalid or expired token."),
     AUTH_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_401_UNAUTH", "Authentication required."),
-    AUTH_ACCOUNT_BANNED(HttpStatus.FORBIDDEN, "AUTH_403", "Account is banned.");
+    AUTH_ACCOUNT_BANNED(HttpStatus.FORBIDDEN, "AUTH_403", "Account is banned."),
+    AUTH_ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, "AUTH_403_LOCKED", "Account is temporarily locked.");
 
 
     private final HttpStatus status;

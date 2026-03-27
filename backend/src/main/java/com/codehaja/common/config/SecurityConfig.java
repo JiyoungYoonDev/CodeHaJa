@@ -39,7 +39,9 @@ public class SecurityConfig {
                                 "/api/auth/logout",
                                 "/api/auth/refresh",
                                 "/api/auth/forgot-password",
-                                "/api/auth/reset-password"
+                                "/api/auth/reset-password",
+                                "/api/cms/auth/login",
+                                "/api/cms/auth/logout"
                         ).permitAll()
                         // Public read-only access
                         .requestMatchers(HttpMethod.GET, "/api/courses/**").permitAll()
