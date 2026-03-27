@@ -66,6 +66,10 @@ export const getCompletedItemCount = async (courseId) => {
   return apiFetch(`/api/progress/courses/${courseId}/completed-item-count`);
 };
 
+export const getCompletedItemIds = async (courseId) => {
+  return apiFetch(`/api/progress/courses/${courseId}/completed-item-ids`);
+};
+
 // Progress - entry
 export const saveEntryProgress = async (entryId, payload) => {
   return apiFetch(`/api/progress/entries/${entryId}`, {

@@ -61,6 +61,14 @@ public class ProgressController {
         return ResponseEntity.ok(ApiResponse.ok("Item progress saved.", null));
     }
 
+    @GetMapping("/courses/{courseId}/completed-item-ids")
+    public ResponseEntity<ApiResponse<java.util.List<Long>>> getCompletedItemIds(
+            @PathVariable Long courseId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        java.util.List<Long> ids = progressService.getCompletedItemIds(courseId, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(ids));
+    }
+
     @GetMapping("/courses/{courseId}/completed-item-count")
     public ResponseEntity<ApiResponse<Long>> getCompletedItemCount(
             @PathVariable Long courseId,

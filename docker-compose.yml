@@ -1,0 +1,77 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: codehaja-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: code_haja_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d code_haja_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: codehaja-backend
+    restart: always
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/code_haja_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      APP_JWT_SECRET: ${JWT_SECRET}
+      APP_COOKIE_SECURE: "true"
+      APP_COOKIE_SAME_SITE: "None"
+      PISTON_BASE_URL: http://piston:2000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+    container_name: codehaja-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  cms:
+    build:
+      context: ../cms-application
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+    container_name: codehaja-cms
+    restart: always
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+
+  piston:
+    image: ghcr.io/engineer-man/piston
+    container_name: codehaja-piston
+    restart: always
+    ports:
+      - "2000:2000"
+    tmpfs:
+      - /piston/jobs
+    privileged: true
+
+volumes:
+  postgres_data:

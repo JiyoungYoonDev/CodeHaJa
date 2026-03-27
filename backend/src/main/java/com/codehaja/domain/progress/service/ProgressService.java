@@ -145,6 +145,11 @@ public class ProgressService {
                 .countByUserIdAndCompletedAtIsNotNullAndLectureItem_Lecture_CourseSection_CourseId(user.getId(), courseId);
     }
 
+    public List<Long> getCompletedItemIds(Long courseId, String userEmail) {
+        User user = getUser(userEmail);
+        return lectureItemProgressRepository.findCompletedItemIdsByUserIdAndCourseId(user.getId(), courseId);
+    }
+
     public LectureProgressDto.CourseSummary getCourseLectureProgress(Long courseId, String userEmail) {
         User user = getUser(userEmail);
         List<Long> completedIds = lectureProgressRepository

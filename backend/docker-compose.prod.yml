@@ -1,0 +1,13 @@
+services:
+  backend:
+    environment:
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      APP_COOKIE_SECURE: "true"
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}

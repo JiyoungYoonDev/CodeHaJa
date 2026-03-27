@@ -46,12 +46,12 @@ function ItemTypeBadge({ itemType }) {
   );
 }
 
-function LectureItemRow({ item, courseId, sectionId, activeItemId, visitedItemIds, passedItemIds, lectureCompleted }) {
+function LectureItemRow({ item, courseId, sectionId, activeItemId, completedItemIds, passedItemIds }) {
   const router = useRouter();
   const isActive = item.id === activeItemId;
   const isVisited = item.itemType === 'CODING_SET'
     ? (passedItemIds?.has(item.id) ?? false)
-    : (lectureCompleted || (visitedItemIds?.has(item.id) ?? false));
+    : (completedItemIds?.has(item.id) ?? false);
 
   function handleClick() {
     router.push(`/learn/${courseId}/${sectionId}?itemId=${item.id}`);
@@ -77,7 +77,7 @@ function LectureItemRow({ item, courseId, sectionId, activeItemId, visitedItemId
   );
 }
 
-function SectionBlock({ section, courseId, activeLectureId, activeItemId, visitedLectureIds, visitedItemIds, passedItemIds }) {
+function SectionBlock({ section, courseId, activeLectureId, activeItemId, visitedLectureIds, completedItemIds, passedItemIds }) {
   const isCurrentSection = section.lectures?.some(
     (l) => l.id === activeLectureId,
   );
@@ -106,7 +106,7 @@ function SectionBlock({ section, courseId, activeLectureId, activeItemId, visite
             activeLectureId={activeLectureId}
             activeItemId={activeItemId}
             visitedLectureIds={visitedLectureIds}
-            visitedItemIds={visitedItemIds}
+            completedItemIds={completedItemIds}
             passedItemIds={passedItemIds}
           />
         ))}
@@ -121,7 +121,7 @@ function LectureBlock({
   activeLectureId,
   activeItemId,
   visitedLectureIds,
-  visitedItemIds,
+  completedItemIds,
   passedItemIds,
 }) {
   const isActive = lecture.id === activeLectureId;
@@ -159,9 +159,8 @@ function LectureBlock({
               courseId={courseId}
               sectionId={sectionId}
               activeItemId={activeItemId}
-              visitedItemIds={visitedItemIds}
+              completedItemIds={completedItemIds}
               passedItemIds={passedItemIds}
-              lectureCompleted={isVisited}
             />
           ))}
         </div>
@@ -175,7 +174,7 @@ export default function LearnSidebar({
   activeLectureId,
   activeItemId,
   visitedLectureIds,
-  visitedItemIds,
+  completedItemIds,
   passedItemIds,
   onClose,
 }) {
@@ -212,7 +211,7 @@ export default function LearnSidebar({
             activeLectureId={activeLectureId}
             activeItemId={activeItemId}
             visitedLectureIds={visitedLectureIds}
-            visitedItemIds={visitedItemIds}
+            completedItemIds={completedItemIds}
             passedItemIds={passedItemIds}
           />
         ))}

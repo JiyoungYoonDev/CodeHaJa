@@ -2,10 +2,12 @@ import { AlertTriangle, Copy } from 'lucide-react';
 import LessonXpBadge from './LessonXpBadge';
 import LessonHintSection from './LessonHintSection';
 import LessonRating from './LessonRating';
+import QuizPanel from './QuizPanel';
 import { tiptapToHtml } from '@/lib/tiptap-renderer';
 
-export default function LessonContentPanel({ item }) {
+export default function LessonContentPanel({ item, onComplete, isCompleted }) {
   const isCoding = item?.itemType === 'CODING_SET';
+  const isQuiz = item?.itemType === 'QUIZ_SET';
   const hints = item?.contentJson?.hints ?? [];
   const expectedOutput = item?.contentJson?.expectedOutput ?? null;
 
@@ -21,6 +23,24 @@ export default function LessonContentPanel({ item }) {
   if (process.env.NODE_ENV === 'development') {
     // console.log('[LessonContentPanel] item.contentJson:', item?.contentJson);
     // console.log('[LessonContentPanel] tiptapDoc:', tiptapDoc, '| tiptapHtml:', tiptapHtml, '| description:', description);
+  }
+
+  if (isQuiz) {
+    return (
+      <div className='px-8 py-8'>
+        <LessonXpBadge points={item?.points ?? 0} />
+        <h1 className='mt-4 text-2xl font-bold text-white'>{item?.title ?? 'Quiz'}</h1>
+        <div className='mt-6'>
+          <QuizPanel
+            contentJson={item?.contentJson}
+            onComplete={onComplete}
+            isCompleted={isCompleted}
+          />
+        </div>
+        <LessonRating />
+        <div className='h-16' />
+      </div>
+    );
   }
 
   return (

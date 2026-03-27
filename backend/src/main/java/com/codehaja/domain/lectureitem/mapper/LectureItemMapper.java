@@ -2,6 +2,8 @@ package com.codehaja.domain.lectureitem.mapper;
 
 import com.codehaja.domain.lectureitem.dto.LectureItemDto;
 import com.codehaja.domain.lectureitem.entity.LectureItem;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,6 +21,7 @@ public interface LectureItemMapper {
     @Mapping(target = "lecture", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "contentJson", expression = "java(parseJson(request.getContentJson()))")
     LectureItem toEntity(LectureItemDto.CreateRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -26,6 +29,7 @@ public interface LectureItemMapper {
     @Mapping(target = "lecture", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "contentJson", expression = "java(parseJson(request.getContentJson()))")
     void updateEntityFromDto(LectureItemDto.UpdateRequest request, @MappingTarget LectureItem lectureItem);
 
     @Mapping(target = "lectureId", source = "lecture.id")
@@ -42,4 +46,13 @@ public interface LectureItemMapper {
     @Mapping(target = "lectureTitle", source = "lecture.title")
     @Mapping(target = "entryCount", expression = "java(0L)")
     LectureItemDto.SummaryResponse toSummaryResponse(LectureItem lectureItem);
+
+    default JsonNode parseJson(String json) {
+        if (json == null || json.isBlank()) return null;
+        try {
+            return new ObjectMapper().readTree(json);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JSON content: " + e.getMessage());
+        }
+    }
 }

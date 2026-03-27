@@ -1,2 +1,10 @@
 .idea
 .vscode
+/claude.md
+
+# Environment files
+.env
+.env.test
+.env.prod
+.env.local
+.env.*.local

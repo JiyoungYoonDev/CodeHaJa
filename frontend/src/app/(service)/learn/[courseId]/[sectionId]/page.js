@@ -17,9 +17,9 @@ import {
   useSaveItemProgressMutation,
   useSectionLecturesQuery,
   useCourseLectureProgressQuery,
-  useLectureProgressQuery,
   useLatestSubmissionQuery,
   usePassedCodingItemsQuery,
+  useCompletedItemIdsQuery,
 } from '../../../../../../hooks/queries/use-learn';
 import { useAuth } from '@/lib/auth-context';
 import CorrectModal from '@/components/learn/CorrectModal';
@@ -64,7 +64,6 @@ function LearnPageInner() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showCorrectModal, setShowCorrectModal] = useState(false);
   const [visitedLectureIds, setVisitedLectureIds] = useState(new Set());
-  const [visitedItemIds, setVisitedItemIds] = useState(new Set());
   const [passedItemIds, setPassedItemIds] = useState(new Set());
 
   const { data: itemResponse, isLoading } = useLectureItemQuery(itemId);
@@ -73,7 +72,6 @@ function LearnPageInner() {
   // Reset all user-specific state when the logged-in user changes
   useEffect(() => {
     setVisitedLectureIds(new Set());
-    setVisitedItemIds(new Set());
     setPassedItemIds(new Set());
     setIsCompleted(false);
   }, [user?.id]);
@@ -98,13 +96,14 @@ function LearnPageInner() {
     });
   }, [lectureProgressResponse]);
 
-  // Direct lecture progress for current item (isCompleted + code restore)
-  const { data: currentLectureProgressResponse } = useLectureProgressQuery(item?.lectureId, {
-    enabled: !!item?.lectureId && !!user,
-    retry: false,
-  });
+  // Per-item completion from DB
+  const { data: completedItemIdsResponse } = useCompletedItemIdsQuery(courseId, { enabled: !!user });
+  const completedItemIds = new Set(completedItemIdsResponse?.data ?? []);
+
+  const isCodingItem = item?.itemType === 'CODING_SET';
+
   const { data: latestSubmissionResponse } = useLatestSubmissionQuery(itemId, {
-    enabled: !!itemId && !!user,
+    enabled: !!itemId && !!user && isCodingItem,
     retry: false,
   });
 
@@ -142,7 +141,6 @@ function LearnPageInner() {
   const { mutateAsync: saveItemProgress } = useSaveItemProgressMutation();
 
   const language = item?.contentJson?.language ?? 'python';
-  const isCodingItem = item?.itemType === 'CODING_SET';
 
   // Reset UI state on item navigation
   useEffect(() => {
@@ -166,12 +164,12 @@ function LearnPageInner() {
     } else {
       setCode(PLACEHOLDER);
     }
-    // isCompleted: lecture must be COMPLETED in DB; coding items also require a PASSED submission
-    const progressCompleted = currentLectureProgressResponse?.data?.status === 'COMPLETED';
-    const alreadyCompleted = progressCompleted &&
+    // isCompleted: this specific item must be in the completed set; coding items also need a PASSED submission
+    const itemCompleted = completedItemIds.has(itemId);
+    const alreadyCompleted = itemCompleted &&
       (!isCodingItem || latestSubmissionResponse?.data?.submissionStatus === 'PASSED');
     setIsCompleted(alreadyCompleted);
-  }, [itemId, item?.contentJson?.starterCode, currentLectureProgressResponse, latestSubmissionResponse]);
+  }, [itemId, item?.contentJson?.starterCode, completedItemIdsResponse, latestSubmissionResponse]);
 
   // Auto-save code draft to localStorage
   useEffect(() => {
@@ -182,17 +180,10 @@ function LearnPageInner() {
     return () => clearTimeout(t);
   }, [code, itemId]);
 
-  // Save resume position + mark item as visited (in-session only)
+  // Save resume position
   useEffect(() => {
     if (!courseId || !sectionId || !itemId) return;
     localStorage.setItem(`codehaja_resume_${courseId}`, JSON.stringify({ sectionId, itemId }));
-
-    setVisitedItemIds((prev) => {
-      if (prev.has(itemId)) return prev;
-      const next = new Set(prev);
-      next.add(itemId);
-      return next;
-    });
   }, [courseId, sectionId, itemId]);
 
   async function handleRun() {
@@ -234,11 +225,12 @@ function LearnPageInner() {
   async function handleComplete() {
     if (!itemId || !item) return;
     await saveItemProgress({ itemId, courseId });
+    queryClient.invalidateQueries({ queryKey: ['completed-item-ids', courseId] });
+    queryClient.invalidateQueries({ queryKey: ['completed-item-count', courseId] });
     const isLastItem = lectureItems.length > 0 && currentItemIndex === lectureItems.length - 1;
     if (item.lectureId && isLastItem) {
       await saveLectureProgress({ lectureId: item.lectureId, payload: { status: 'COMPLETED' } });
       queryClient.invalidateQueries({ queryKey: ['course-lecture-progress', courseId] });
-      queryClient.invalidateQueries({ queryKey: ['lecture-progress', item.lectureId] });
       setVisitedLectureIds((prev) => {
         if (prev.has(item.lectureId)) return prev;
         const next = new Set(prev);
@@ -305,13 +297,13 @@ function LearnPageInner() {
             activeLectureId={item?.lectureId ?? null}
             activeItemId={itemId}
             visitedLectureIds={visitedLectureIds}
-            visitedItemIds={visitedItemIds}
+            completedItemIds={completedItemIds}
             passedItemIds={passedItemIds}
             onClose={() => setSidebarOpen(false)}
           />
         ) : null
       }
-      leftPanel={<LessonContentPanel item={item} />}
+      leftPanel={<LessonContentPanel item={item} onComplete={handleComplete} isCompleted={isCompleted} />}
       rightPanel={
         isCodingItem ? (
           <CodeEditorPanel

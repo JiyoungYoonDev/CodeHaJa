@@ -15,6 +15,7 @@ import {
   getPassedCodingItems,
   saveItemProgress,
   getCompletedItemCount,
+  getCompletedItemIds,
 } from '../../services/learn-service';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -148,6 +149,16 @@ export function useCompletedItemCountQuery(courseId, options = {}) {
   return useQuery({
     queryKey: ['completed-item-count', courseId],
     queryFn: () => getCompletedItemCount(courseId),
+    enabled: !!courseId,
+    retry: false,
+    ...options,
+  });
+}
+
+export function useCompletedItemIdsQuery(courseId, options = {}) {
+  return useQuery({
+    queryKey: ['completed-item-ids', courseId],
+    queryFn: () => getCompletedItemIds(courseId),
     enabled: !!courseId,
     retry: false,
     ...options,

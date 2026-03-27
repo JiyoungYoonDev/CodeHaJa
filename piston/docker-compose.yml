@@ -1,0 +1,12 @@
+services:
+  api:
+    image: ghcr.io/engineer-man/piston
+    privileged: true
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston_packages:/piston/packages
+    restart: always
+
+volumes:
+  piston_packages:

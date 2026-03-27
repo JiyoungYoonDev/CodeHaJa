@@ -1,0 +1,14 @@
+services:
+  backend:
+    environment:
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      APP_COOKIE_SECURE: "true"
+      APP_COOKIE_SAME_SITE: "None"
+
+  frontend:
+    ports:
+      - "3000:3000"
+
+  cms:
+    ports:
+      - "3001:3000"
