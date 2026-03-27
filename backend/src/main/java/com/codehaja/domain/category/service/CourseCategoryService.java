@@ -89,7 +89,13 @@ public class CourseCategoryService {
     public void deleteCategory(Long categoryId) {
         CourseCategory category = courseCategoryRepository.findById(categoryId)
             .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
-        
+
+        long linkedCourses = courseCategoryRepository.countCoursesByCategoryId(categoryId);
+        if (linkedCourses > 0) {
+            throw new BusinessException(ErrorCode.CATEGORY_HAS_COURSES,
+                    "There are linked courses. (" + linkedCourses + " courses linked)");
+        }
+
         courseCategoryRepository.delete(category);
     }
 

@@ -43,6 +43,19 @@ public class AnonymousUserService {
         return response;
     }
 
+    @Transactional
+    public AnonymousUser getOrCreateAnonymousUser(String anonymousUserKey) {
+        if (anonymousUserKey == null || anonymousUserKey.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT, "anonymousUserKey is required.");
+        }
+        return anonymousUserRepository.findByAnonymousUserKey(anonymousUserKey)
+                .orElseGet(() -> {
+                    AnonymousUser newUser = new AnonymousUser();
+                    newUser.setAnonymousUserKey(anonymousUserKey);
+                    return anonymousUserRepository.save(newUser);
+                });
+    }
+
     public AnonymousUser getAnonymousUserOrThrow(String anonymousUserKey) {
         if (anonymousUserKey == null || anonymousUserKey.isBlank()) {
             throw new BusinessException(ErrorCode.INVALID_INPUT, "anonymousUserKey is required.");

@@ -1,11 +1,7 @@
 package com.codehaja.domain.course.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +19,7 @@ import com.codehaja.domain.course.repository.CourseRepository;
 import com.codehaja.domain.lecture.dto.LectureDto;
 import com.codehaja.domain.lecture.mapper.LectureMapper;
 import com.codehaja.domain.lecture.repository.LectureRepository;
+import com.codehaja.domain.lectureitem.repository.LectureItemRepository;
 import com.codehaja.domain.section.dto.CourseSectionDto;
 import com.codehaja.domain.section.entity.CourseSection;
 import com.codehaja.domain.section.mapper.CourseSectionMapper;
@@ -38,6 +35,7 @@ public class CourseService {
     private final CourseCategoryRepository courseCategoryRepository;
     private final CourseSectionRepository courseSectionRepository;
     private final LectureRepository lectureRepository;
+    private final LectureItemRepository lectureItemRepository;
     private final CourseMapper courseMapper;
     private final CourseSectionMapper courseSectionMapper;
     private final LectureMapper lectureMapper;
@@ -109,7 +107,12 @@ public class CourseService {
                             List<LectureDto.SummaryResponse> lectures =
                                     lectureRepository.findAllByCourseSectionIdOrderBySortOrderAsc(section.getId())
                                             .stream()
-                                            .map(lectureMapper::toSummaryResponse)
+                                            .map(lecture -> {
+                                                LectureDto.SummaryResponse lr = lectureMapper.toSummaryResponse(lecture);
+                                                lectureItemRepository.findFirstByLectureIdOrderBySortOrderAsc(lecture.getId())
+                                                        .ifPresent(item -> lr.setFirstItemId(item.getId()));
+                                                return lr;
+                                            })
                                             .toList();
                             sectionResponse.setLectures(lectures);
                             return sectionResponse;

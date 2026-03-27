@@ -1,15 +1,16 @@
 package com.codehaja.domain.coding.service;
 
+import com.codehaja.auth.entity.User;
+import com.codehaja.auth.repository.UserRepository;
 import com.codehaja.common.exception.BusinessException;
 import com.codehaja.common.exception.ErrorCode;
-import com.codehaja.domain.anonymous.entity.AnonymousUser;
-import com.codehaja.domain.anonymous.service.AnonymousUserService;
 import com.codehaja.domain.coding.dto.CodingSubmissionDto;
 import com.codehaja.domain.coding.entity.CodingSubmission;
 import com.codehaja.domain.coding.entity.SubmissionStatus;
 import com.codehaja.domain.coding.repository.CodingSubmissionRepository;
-import com.codehaja.domain.lectureitementry.entity.LectureItemEntry;
-import com.codehaja.domain.lectureitementry.repository.LectureItemEntryRepository;
+import com.codehaja.domain.judge.PistonClient;
+import com.codehaja.domain.lectureitem.entity.LectureItem;
+import com.codehaja.domain.lectureitem.repository.LectureItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,26 +22,40 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CodingSubmissionService {
 
-    private final AnonymousUserService anonymousUserService;
-    private final LectureItemEntryRepository lectureItemEntryRepository;
+    private final UserRepository userRepository;
+    private final LectureItemRepository lectureItemRepository;
     private final CodingSubmissionRepository codingSubmissionRepository;
+    private final PistonClient pistonClient;
 
     @Transactional
-    public CodingSubmissionDto.Response submit(Long lectureItemEntryId, CodingSubmissionDto.SubmitRequest request) {
-        validateRequest(request);
+    public CodingSubmissionDto.Response submit(Long lectureItemId, CodingSubmissionDto.SubmitRequest request, String userEmail) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT, "Request body is required.");
+        }
+        if (request.getSourceCode() == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT, "sourceCode is required.");
+        }
 
-        AnonymousUser anonymousUser = anonymousUserService.getAnonymousUserOrThrow(request.getAnonymousUserKey());
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));
 
-        LectureItemEntry entry = lectureItemEntryRepository.findById(lectureItemEntryId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ENTRY_NOT_FOUND));
+        LectureItem lectureItem = lectureItemRepository.findById(lectureItemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_ITEM_NOT_FOUND));
+
+        String expectedOutput = null;
+        if (lectureItem.getContentJson() != null) {
+            var node = lectureItem.getContentJson().get("expectedOutput");
+            if (node != null && !node.isNull()) {
+                expectedOutput = node.asText();
+            }
+        }
 
         CodingSubmission submission = new CodingSubmission();
-        submission.setAnonymousUser(anonymousUser);
-        submission.setLectureItemEntry(entry);
+        submission.setUser(user);
+        submission.setLectureItem(lectureItem);
         submission.setSourceCode(request.getSourceCode());
         submission.setLanguage(request.getLanguage());
-
-        submission.setSubmissionStatus(SubmissionStatus.PENDING);
+        submission.setSubmissionStatus(SubmissionStatus.RUNNING);
         submission.setPassedCount(0);
         submission.setTotalCount(0);
         submission.setExecutionTimeMs(0L);
@@ -50,31 +65,59 @@ public class CodingSubmissionService {
 
         CodingSubmission saved = codingSubmissionRepository.save(submission);
 
+        try {
+            PistonClient.ExecutionResult result = pistonClient.execute(
+                    request.getSourceCode(), request.getLanguage()
+            );
+            saved.setStdout(result.getStdout() != null ? result.getStdout() : "");
+            saved.setStderr(result.getStderr() != null ? result.getStderr() : "");
+            saved.setTotalCount(1);
+
+            if (result.isCompileError()) {
+                saved.setSubmissionStatus(SubmissionStatus.ERROR);
+            } else if (result.isRuntimeError()) {
+                saved.setSubmissionStatus(SubmissionStatus.ERROR);
+            } else if (result.isAccepted(expectedOutput)) {
+                saved.setSubmissionStatus(SubmissionStatus.PASSED);
+                saved.setPassedCount(1);
+            } else {
+                saved.setSubmissionStatus(SubmissionStatus.FAILED);
+            }
+        } catch (Exception e) {
+            saved.setSubmissionStatus(SubmissionStatus.ERROR);
+            saved.setStderr("Execution failed: " + e.getMessage());
+        }
+
         return toResponse(saved);
     }
 
     public CodingSubmissionDto.Response getSubmission(Long submissionId) {
         CodingSubmission submission = codingSubmissionRepository.findById(submissionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CODING_SUBMISSION_NOT_FOUND));
-
         return toResponse(submission);
     }
 
-    public List<CodingSubmissionDto.Response> getSubmissions(Long lectureItemEntryId, String anonymousUserKey) {
-        AnonymousUser anonymousUser = anonymousUserService.getAnonymousUserOrThrow(anonymousUserKey);
+    public CodingSubmissionDto.Response getLatestSubmission(Long lectureItemId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));
+        return codingSubmissionRepository
+                .findAllByUserIdAndLectureItemIdOrderByCreatedAtDesc(user.getId(), lectureItemId)
+                .stream().findFirst().map(this::toResponse).orElse(null);
+    }
 
-        List<CodingSubmission> submissions = codingSubmissionRepository
-                .findAllByAnonymousUserIdAndLectureItemEntryIdOrderByCreatedAtDesc(
-                        anonymousUser.getId(), lectureItemEntryId
-                );
+    public List<CodingSubmissionDto.Response> getSubmissions(Long lectureItemId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));
 
-        return submissions.stream().map(this::toResponse).toList();
+        return codingSubmissionRepository
+                .findAllByUserIdAndLectureItemIdOrderByCreatedAtDesc(user.getId(), lectureItemId)
+                .stream().map(this::toResponse).toList();
     }
 
     private CodingSubmissionDto.Response toResponse(CodingSubmission submission) {
         CodingSubmissionDto.Response response = new CodingSubmissionDto.Response();
         response.setId(submission.getId());
-        response.setLectureItemEntryId(submission.getLectureItemEntry().getId());
+        response.setLectureItemId(submission.getLectureItem().getId());
         response.setSourceCode(submission.getSourceCode());
         response.setLanguage(submission.getLanguage());
         response.setSubmissionStatus(submission.getSubmissionStatus().name());
@@ -85,17 +128,5 @@ public class CodingSubmissionService {
         response.setStderr(submission.getStderr());
         response.setResultJson(submission.getResultJson());
         return response;
-    }
-
-    private void validateRequest(CodingSubmissionDto.SubmitRequest request) {
-        if (request == null) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT, "Request body is required.");
-        }
-        if (request.getAnonymousUserKey() == null || request.getAnonymousUserKey().isBlank()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT, "anonymousUserKey is required.");
-        }
-        if (request.getSourceCode() == null) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT, "sourceCode is required.");
-        }
     }
 }

@@ -2,14 +2,13 @@ package com.codehaja.domain.coding.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class CodingSubmissionDto {
 
     @Getter
     @Setter
     public static class SubmitRequest {
-        private String anonymousUserKey;
         private String sourceCode;
         private String language;
     }
@@ -18,7 +17,7 @@ public class CodingSubmissionDto {
     @Setter
     public static class Response {
         private Long id;
-        private Long lectureItemEntryId;
+        private Long lectureItemId;
         private String sourceCode;
         private String language;
         private String submissionStatus;

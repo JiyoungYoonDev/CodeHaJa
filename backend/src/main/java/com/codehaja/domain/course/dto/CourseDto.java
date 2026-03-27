@@ -6,7 +6,7 @@ import com.codehaja.domain.course.entity.CourseStatus;
 import com.codehaja.domain.course.entity.Difficulty;
 import com.codehaja.domain.section.dto.CourseSectionDto;
 
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 

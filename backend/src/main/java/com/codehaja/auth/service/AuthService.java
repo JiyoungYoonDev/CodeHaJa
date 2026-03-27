@@ -166,9 +166,7 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(AuthDto.ResetPasswordRequest request) {
-        User user = userRepository.findAll().stream()
-                .filter(u -> request.getToken().equals(u.getPasswordResetToken()))
-                .findFirst()
+        User user = userRepository.findByPasswordResetToken(request.getToken())
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_INVALID_TOKEN));
 
         if (user.getPasswordResetTokenExpiresAt() == null ||

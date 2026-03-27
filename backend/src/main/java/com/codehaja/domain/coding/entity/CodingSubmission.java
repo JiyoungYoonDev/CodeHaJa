@@ -1,13 +1,13 @@
 package com.codehaja.domain.coding.entity;
 
+import com.codehaja.auth.entity.User;
 import com.codehaja.common.converter.JsonNodeConverter;
 import com.codehaja.common.entity.BaseTimeEntity;
-import com.codehaja.domain.anonymous.entity.AnonymousUser;
-import com.codehaja.domain.lectureitementry.entity.LectureItemEntry;
+import com.codehaja.domain.lectureitem.entity.LectureItem;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
 @Table(name = "coding_submissions")
@@ -19,13 +19,13 @@ public class CodingSubmission extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "anonymous_user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private AnonymousUser anonymousUser;
+    private User user;
 
-    @JoinColumn(name = "lecture_item_entry_id", nullable = false)
+    @JoinColumn(name = "lecture_item_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    private LectureItemEntry lectureItemEntry;
+    private LectureItem lectureItem;
 
     @Column(name = "source_code", columnDefinition = "TEXT", nullable = false)
     private String sourceCode;

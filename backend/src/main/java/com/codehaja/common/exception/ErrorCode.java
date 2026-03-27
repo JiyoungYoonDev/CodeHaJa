@@ -13,6 +13,7 @@ public enum ErrorCode {
     // Category
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY_404", "Category not found."),
     CATEGORY_ALREADY_EXISTS(HttpStatus.CONFLICT, "CATEGORY_409", "Category already exists."),
+    CATEGORY_HAS_COURSES(HttpStatus.CONFLICT, "CATEGORY_409_LINKED", "Category has linked courses."),
 
     // Course
     COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "COURSE_404", "Course not found."),

@@ -6,6 +6,7 @@ import com.codehaja.common.api.ApiResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +22,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<AuthDto.MeResponse>> signup(
-            @RequestBody AuthDto.SignupRequest request,
+            @Valid @RequestBody AuthDto.SignupRequest request,
             HttpServletResponse response) {
         AuthDto.MeResponse user = authService.signup(request, response);
         return ResponseEntity.ok(ApiResponse.success(user));
@@ -29,7 +30,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthDto.MeResponse>> login(
-            @RequestBody AuthDto.LoginRequest request,
+            @Valid @RequestBody AuthDto.LoginRequest request,
             HttpServletResponse response) {
         AuthDto.MeResponse user = authService.login(request, response);
         return ResponseEntity.ok(ApiResponse.success(user));
@@ -37,7 +38,7 @@ public class AuthController {
 
     @PostMapping("/google")
     public ResponseEntity<ApiResponse<AuthDto.MeResponse>> googleLogin(
-            @RequestBody AuthDto.GoogleLoginRequest request,
+            @Valid @RequestBody AuthDto.GoogleLoginRequest request,
             HttpServletResponse response) {
         AuthDto.MeResponse user = authService.googleLogin(request, response);
         return ResponseEntity.ok(ApiResponse.success(user));
@@ -70,14 +71,14 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(
-            @RequestBody AuthDto.ForgotPasswordRequest request) {
+            @Valid @RequestBody AuthDto.ForgotPasswordRequest request) {
         authService.forgotPassword(request);
         return ResponseEntity.ok(ApiResponse.success((Void) null));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<Void>> resetPassword(
-            @RequestBody AuthDto.ResetPasswordRequest request) {
+            @Valid @RequestBody AuthDto.ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok(ApiResponse.success((Void) null));
     }

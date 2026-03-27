@@ -18,4 +18,7 @@ public interface CourseCategoryRepository extends JpaRepository<CourseCategory, 
     """)
     List<Object[]> findAllWithCourseCount();
 
+    @Query("SELECT COUNT(course.id) FROM Course course WHERE course.category.id = :categoryId")
+    long countCoursesByCategoryId(Long categoryId);
+
 }

@@ -4,7 +4,7 @@ import com.codehaja.common.converter.JsonNodeConverter;
 import com.codehaja.common.entity.BaseTimeEntity;
 import com.codehaja.domain.category.entity.CourseCategory;
 
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
