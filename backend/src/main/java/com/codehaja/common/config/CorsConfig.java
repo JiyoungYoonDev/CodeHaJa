@@ -13,7 +13,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.cors.extra-origins:}")
+    @Value("${APP_CORS_EXTRA_ORIGINS:}")
     private String extraOrigins;
 
     @Bean
