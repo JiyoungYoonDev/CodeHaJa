@@ -97,7 +97,11 @@ public class ProgressService {
         progress.setStatus(request.getStatus() == null ? ProgressStatus.IN_PROGRESS : request.getStatus());
         progress.setIsCorrect(request.getIsCorrect());
         progress.setScore(request.getScore());
-        progress.setAnswerJson(request.getAnswerJson());
+        try {
+            progress.setAnswerJson(request.getAnswerJson() != null ? new com.fasterxml.jackson.databind.ObjectMapper().readTree(request.getAnswerJson()) : null);
+        } catch (Exception e) {
+            progress.setAnswerJson(null);
+        }
         progress.setLastAttemptedAt(LocalDateTime.now());
 
         if (progress.getStatus() == ProgressStatus.COMPLETED) {
@@ -183,7 +187,7 @@ public class ProgressService {
         r.setStatus(p.getStatus());
         r.setIsCorrect(p.getIsCorrect());
         r.setScore(p.getScore());
-        r.setAnswerJson(p.getAnswerJson());
+        r.setAnswerJson(p.getAnswerJson() != null ? p.getAnswerJson().toString() : null);
         return r;
     }
 }

@@ -176,7 +176,6 @@ public class CourseService {
 
         courseMapper.updateEntityFromDto(request, course);
         course.setCategory(category);
-        course.setDetailedCurriculum(request.getDetailedCurriculum());
 
         applyDefaults(course);
         replaceSections(course, request.getSections());
