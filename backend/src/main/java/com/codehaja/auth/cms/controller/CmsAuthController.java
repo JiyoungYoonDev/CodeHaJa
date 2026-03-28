@@ -23,9 +23,19 @@ public class CmsAuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<CmsAuthDto.MeResponse>> login(
             @Valid @RequestBody CmsAuthDto.LoginRequest request,
+            HttpServletRequest request2,
             HttpServletResponse response) {
-        CmsAuthDto.MeResponse admin = cmsAuthService.login(request, response);
+        String ip = getClientIp(request2);
+        CmsAuthDto.MeResponse admin = cmsAuthService.login(request, ip, response);
         return ResponseEntity.ok(ApiResponse.success(admin));
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 
     @PostMapping("/logout")

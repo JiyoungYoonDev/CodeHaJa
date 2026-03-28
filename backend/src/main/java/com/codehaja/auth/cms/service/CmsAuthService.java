@@ -17,18 +17,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CmsAuthService {
 
-    private static final int MAX_FAILED_ATTEMPTS = 5;
-    private static final int LOCK_DURATION_MINUTES = 15;
-
     private final AdminRepository adminRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final LoginAttemptService loginAttemptService;
 
     @Value("${app.jwt.access-token-expiration-ms}")
     private long accessTokenExpirationMs;
@@ -43,37 +42,30 @@ public class CmsAuthService {
     private String cookieSameSite;
 
     @Transactional
-    public CmsAuthDto.MeResponse login(CmsAuthDto.LoginRequest request, HttpServletResponse response) {
-        Admin admin = adminRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_INVALID_CREDENTIALS));
-
-        // Check lockout
-        if (admin.getLockedUntil() != null && admin.getLockedUntil().isAfter(LocalDateTime.now())) {
-            long minutesLeft = Duration.between(LocalDateTime.now(), admin.getLockedUntil()).toMinutes() + 1;
+    public CmsAuthDto.MeResponse login(CmsAuthDto.LoginRequest request, String ip, HttpServletResponse response) {
+        // IP-based lockout check (covers non-existent emails too)
+        if (loginAttemptService.isBlocked(ip)) {
+            long minutesLeft = loginAttemptService.getLockedMinutesLeft(ip);
             throw new BusinessException(ErrorCode.AUTH_ACCOUNT_LOCKED,
-                    "Account locked. Try again in " + minutesLeft + " minute(s).");
+                    "Too many failed attempts. Try again in " + minutesLeft + " minute(s).");
         }
 
-        // Check password
-        if (!passwordEncoder.matches(request.getPassword(), admin.getPasswordHash())) {
-            int attempts = admin.getFailedAttempts() + 1;
-            if (attempts >= MAX_FAILED_ATTEMPTS) {
-                admin.setFailedAttempts(0);
-                admin.setLockedUntil(LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES));
-                adminRepository.save(admin);
+        // Check email exists in admin table
+        Admin admin = adminRepository.findByEmail(request.getEmail()).orElse(null);
+
+        if (admin == null || !passwordEncoder.matches(request.getPassword(), admin.getPasswordHash())) {
+            loginAttemptService.recordFailure(ip);
+            int remaining = loginAttemptService.getRemainingAttempts(ip);
+            if (remaining == 0) {
                 throw new BusinessException(ErrorCode.AUTH_ACCOUNT_LOCKED,
-                        "Too many failed attempts. Account locked for " + LOCK_DURATION_MINUTES + " minutes.");
+                        "Too many failed attempts. Account locked for 15 minutes.");
             }
-            admin.setFailedAttempts(attempts);
-            adminRepository.save(admin);
-            int remaining = MAX_FAILED_ATTEMPTS - attempts;
             throw new BusinessException(ErrorCode.AUTH_INVALID_CREDENTIALS,
                     "Invalid email or password. " + remaining + " attempt(s) remaining.");
         }
 
-        // Success — reset lockout state
-        admin.setFailedAttempts(0);
-        admin.setLockedUntil(null);
+        // Success
+        loginAttemptService.recordSuccess(ip);
         issueTokens(admin, response);
         return toMeResponse(admin);
     }
