@@ -257,6 +257,11 @@ public class AuthService {
                 .profileImage(user.getProfileImage())
                 .role(user.getRole().name())
                 .provider(user.getProvider().name())
+                .totalXp(user.getTotalXp())
+                .tier(com.codehaja.domain.gamification.TierCalculator.getTier(user.getTotalXp()))
+                .hearts(user.getHearts())
+                .heartsRefillAt(user.getHeartsRefillAt())
+                .streakDays(user.getStreakDays())
                 .build();
     }
 }

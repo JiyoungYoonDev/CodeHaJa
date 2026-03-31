@@ -44,6 +44,8 @@ public interface LectureItemMapper {
 
     @Mapping(target = "lectureId", source = "lecture.id")
     @Mapping(target = "lectureTitle", source = "lecture.title")
+    @Mapping(target = "sectionId", source = "lecture.courseSection.id")
+    @Mapping(target = "courseId", source = "lecture.courseSection.course.id")
     @Mapping(target = "entryCount", expression = "java(0L)")
     LectureItemDto.SummaryResponse toSummaryResponse(LectureItem lectureItem);
 

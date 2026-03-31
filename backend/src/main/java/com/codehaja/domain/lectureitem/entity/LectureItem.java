@@ -29,6 +29,10 @@ public class LectureItem extends BaseTimeEntity {
     @Column(name = "item_type", nullable = false, length = 50)
     private LectureItemType itemType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "review_status", nullable = false, length = 20)
+    private ReviewStatus reviewStatus = ReviewStatus.DRAFT;
+
     @Column(length = 2000)
     private String description;
 

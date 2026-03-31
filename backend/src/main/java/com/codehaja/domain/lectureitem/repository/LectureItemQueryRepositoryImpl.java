@@ -2,6 +2,7 @@ package com.codehaja.domain.lectureitem.repository;
 
 import com.codehaja.domain.lectureitem.dto.LectureItemDto;
 import com.codehaja.domain.lectureitem.entity.LectureItemType;
+import com.codehaja.domain.lectureitem.entity.ReviewStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -23,6 +24,7 @@ public class LectureItemQueryRepositoryImpl implements LectureItemQueryRepositor
             Long lectureId,
             String keyword,
             LectureItemType itemType,
+            ReviewStatus reviewStatus,
             Pageable pageable
     ) {
         StringBuilder fromClause = new StringBuilder("""
@@ -43,6 +45,12 @@ public class LectureItemQueryRepositoryImpl implements LectureItemQueryRepositor
             """);
         }
 
+        if (reviewStatus != null) {
+            fromClause.append("""
+                 AND li.reviewStatus = :reviewStatus
+            """);
+        }
+
         String selectQuery = """
             SELECT li.id, l.id, l.title, li.title, li.itemType, li.description,
                    li.sortOrder, li.points, li.isRequired
@@ -56,9 +64,11 @@ public class LectureItemQueryRepositoryImpl implements LectureItemQueryRepositor
         if (keyword != null && !keyword.isBlank()) {
             query.setParameter("keyword", keyword);
         }
-
         if (itemType != null) {
             query.setParameter("itemType", itemType);
+        }
+        if (reviewStatus != null) {
+            query.setParameter("reviewStatus", reviewStatus);
         }
 
         query.setFirstResult((int) pageable.getOffset());
@@ -77,7 +87,7 @@ public class LectureItemQueryRepositoryImpl implements LectureItemQueryRepositor
             dto.setSortOrder(row[6] == null ? 0 : ((Number) row[6]).intValue());
             dto.setPoints(row[7] == null ? 0 : ((Number) row[7]).intValue());
             dto.setIsRequired((Boolean) row[8]);
-            dto.setEntryCount(0L); // Entry 도메인 추가 후 count join으로 확장
+            dto.setEntryCount(0L);
             return dto;
         }).toList();
 
@@ -88,9 +98,11 @@ public class LectureItemQueryRepositoryImpl implements LectureItemQueryRepositor
         if (keyword != null && !keyword.isBlank()) {
             countQuery.setParameter("keyword", keyword);
         }
-
         if (itemType != null) {
             countQuery.setParameter("itemType", itemType);
+        }
+        if (reviewStatus != null) {
+            countQuery.setParameter("reviewStatus", reviewStatus);
         }
 
         Long total = countQuery.getSingleResult();

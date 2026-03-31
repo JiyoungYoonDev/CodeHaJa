@@ -11,6 +11,8 @@ import java.util.List;
 public interface CodingSubmissionRepository extends JpaRepository<CodingSubmission, Long> {
     List<CodingSubmission> findAllByUserIdAndLectureItemIdOrderByCreatedAtDesc(Long userId, Long lectureItemId);
 
+    boolean existsByUserIdAndLectureItemIdAndSubmissionStatus(Long userId, Long lectureItemId, SubmissionStatus status);
+
     @Query("SELECT DISTINCT cs.lectureItem.id FROM CodingSubmission cs " +
            "WHERE cs.user.id = :userId AND cs.submissionStatus = :status " +
            "AND cs.lectureItem.lecture.courseSection.course.id = :courseId")

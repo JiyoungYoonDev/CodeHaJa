@@ -88,6 +88,7 @@ public class CourseDto {
         private Long lectureCount;
         private Integer totalSections;
         private Integer projectsCount;
+        private String imageUrl;
         private CourseStatus status;
         private List<CourseSectionDto.SummaryResponse> sections;
         @JsonRawValue

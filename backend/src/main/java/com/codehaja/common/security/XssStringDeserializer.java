@@ -3,7 +3,6 @@ package com.codehaja.common.security;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.springframework.boot.jackson.JsonComponent;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -12,8 +11,8 @@ import java.util.regex.Pattern;
  * Globally sanitizes all incoming JSON String fields to prevent XSS.
  * Targets only dangerous patterns (<script>, javascript:, inline event handlers).
  * Does NOT strip all HTML to avoid breaking code content with < > characters.
+ * Registered via JacksonConfig (Spring Boot 4 removed @JsonComponent).
  */
-@JsonComponent
 public class XssStringDeserializer extends StdDeserializer<String> {
 
     private static final Pattern SCRIPT_TAG =

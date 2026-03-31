@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 public class AuthDto {
 
     @Getter
@@ -71,5 +73,11 @@ public class AuthDto {
         private String profileImage;
         private String role;
         private String provider;
+        // Gamification
+        private int totalXp;
+        private String tier;
+        private int hearts;
+        private LocalDateTime heartsRefillAt;
+        private int streakDays;
     }
 }

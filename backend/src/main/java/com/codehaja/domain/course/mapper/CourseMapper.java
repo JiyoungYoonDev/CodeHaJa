@@ -50,5 +50,6 @@ public interface CourseMapper {
     @Mapping(target = "sections", ignore = true)
     @Mapping(target = "totalSections", ignore = true)
     @Mapping(target = "detailedCurriculum", ignore = true)
+    @Mapping(target = "imageUrl", source = "imageUrl")
     CourseDto.DetailResponse toDetailResponse(Course course);
 }

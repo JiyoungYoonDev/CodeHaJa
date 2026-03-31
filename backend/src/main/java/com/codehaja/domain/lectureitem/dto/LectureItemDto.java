@@ -1,6 +1,7 @@
 package com.codehaja.domain.lectureitem.dto;
 
 import com.codehaja.domain.lectureitem.entity.LectureItemType;
+import com.codehaja.domain.lectureitem.entity.ReviewStatus;
 import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonRawValue;
@@ -9,9 +10,16 @@ public class LectureItemDto {
 
     @Getter
     @Setter
+    public static class ReviewStatusRequest {
+        private ReviewStatus reviewStatus;
+    }
+
+    @Getter
+    @Setter
     public static class CreateRequest {
         private String title;
         private LectureItemType itemType;
+        private ReviewStatus reviewStatus;
         private String description;
         private String contentJson;
         private Integer sortOrder;
@@ -24,6 +32,7 @@ public class LectureItemDto {
     public static class UpdateRequest {
         private String title;
         private LectureItemType itemType;
+        private ReviewStatus reviewStatus;
         private String description;
         private String contentJson;
         private Integer sortOrder;
@@ -37,8 +46,11 @@ public class LectureItemDto {
         private Long id;
         private Long lectureId;
         private String lectureTitle;
+        private Long sectionId;
+        private Long courseId;
         private String title;
         private LectureItemType itemType;
+        private ReviewStatus reviewStatus;
         private String description;
         private Integer sortOrder;
         private Integer points;
@@ -59,6 +71,7 @@ public class LectureItemDto {
         private String courseTitle;
         private String title;
         private LectureItemType itemType;
+        private ReviewStatus reviewStatus;
         private String description;
         @JsonRawValue
         private String contentJson;

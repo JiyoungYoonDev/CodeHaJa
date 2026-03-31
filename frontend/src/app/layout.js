@@ -3,6 +3,7 @@ import Providers from './providers';
 import Navbar from '@/components/common/navbar';
 import ThemeScript from '@/components/common/ThemeScript';
 import './globals.css';
+import 'katex/dist/katex.min.css';
 
 const sans = DM_Sans({ subsets: ['latin'] });
 

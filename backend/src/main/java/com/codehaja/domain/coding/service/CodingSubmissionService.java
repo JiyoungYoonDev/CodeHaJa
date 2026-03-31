@@ -8,6 +8,8 @@ import com.codehaja.domain.coding.dto.CodingSubmissionDto;
 import com.codehaja.domain.coding.entity.CodingSubmission;
 import com.codehaja.domain.coding.entity.SubmissionStatus;
 import com.codehaja.domain.coding.repository.CodingSubmissionRepository;
+import com.codehaja.domain.gamification.service.HeartService;
+import com.codehaja.domain.gamification.service.XpService;
 import com.codehaja.domain.judge.PistonClient;
 import com.codehaja.domain.lectureitem.entity.LectureItem;
 import com.codehaja.domain.lectureitem.repository.LectureItemRepository;
@@ -26,6 +28,8 @@ public class CodingSubmissionService {
     private final LectureItemRepository lectureItemRepository;
     private final CodingSubmissionRepository codingSubmissionRepository;
     private final PistonClient pistonClient;
+    private final XpService xpService;
+    private final HeartService heartService;
 
     @Transactional
     public CodingSubmissionDto.Response submit(Long lectureItemId, CodingSubmissionDto.SubmitRequest request, String userEmail) {
@@ -39,6 +43,11 @@ public class CodingSubmissionService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));
 
+        // Grade flow: check hearts before execution
+        if (request.isGrade()) {
+            heartService.requireHeart(user);
+        }
+
         LectureItem lectureItem = lectureItemRepository.findById(lectureItemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_ITEM_NOT_FOUND));
 
@@ -49,6 +58,11 @@ public class CodingSubmissionService {
                 expectedOutput = node.asText();
             }
         }
+
+        // Check first-time pass before saving (current submission is not yet PASSED)
+        boolean noPreviousPass = request.isGrade() &&
+                !codingSubmissionRepository.existsByUserIdAndLectureItemIdAndSubmissionStatus(
+                        user.getId(), lectureItemId, SubmissionStatus.PASSED);
 
         CodingSubmission submission = new CodingSubmission();
         submission.setUser(user);
@@ -65,6 +79,7 @@ public class CodingSubmissionService {
 
         CodingSubmission saved = codingSubmissionRepository.save(submission);
 
+        int xpGained = 0;
         try {
             PistonClient.ExecutionResult result = pistonClient.execute(
                     request.getSourceCode(), request.getLanguage()
@@ -75,20 +90,27 @@ public class CodingSubmissionService {
 
             if (result.isCompileError()) {
                 saved.setSubmissionStatus(SubmissionStatus.ERROR);
+                if (request.isGrade()) heartService.deductHeart(user);
             } else if (result.isRuntimeError()) {
                 saved.setSubmissionStatus(SubmissionStatus.ERROR);
+                if (request.isGrade()) heartService.deductHeart(user);
             } else if (result.isAccepted(expectedOutput)) {
                 saved.setSubmissionStatus(SubmissionStatus.PASSED);
                 saved.setPassedCount(1);
+                if (noPreviousPass) {
+                    xpGained = xpService.award(user, XpService.XP_CODING_PASS);
+                }
             } else {
                 saved.setSubmissionStatus(SubmissionStatus.FAILED);
+                if (request.isGrade()) heartService.deductHeart(user);
             }
         } catch (Exception e) {
             saved.setSubmissionStatus(SubmissionStatus.ERROR);
             saved.setStderr("Execution failed: " + e.getMessage());
+            if (request.isGrade()) heartService.deductHeart(user);
         }
 
-        return toResponse(saved);
+        return toResponse(saved, xpGained, user);
     }
 
     public CodingSubmissionDto.Response getSubmission(Long submissionId) {
@@ -122,6 +144,10 @@ public class CodingSubmissionService {
     }
 
     private CodingSubmissionDto.Response toResponse(CodingSubmission submission) {
+        return toResponse(submission, 0, null);
+    }
+
+    private CodingSubmissionDto.Response toResponse(CodingSubmission submission, int xpGained, User user) {
         CodingSubmissionDto.Response response = new CodingSubmissionDto.Response();
         response.setId(submission.getId());
         response.setLectureItemId(submission.getLectureItem().getId());
@@ -134,6 +160,11 @@ public class CodingSubmissionService {
         response.setStdout(submission.getStdout());
         response.setStderr(submission.getStderr());
         response.setResultJson(submission.getResultJson() != null ? submission.getResultJson().toString() : null);
+        response.setXpGained(xpGained);
+        if (user != null) {
+            response.setCurrentHearts(user.getHearts());
+            response.setHeartsRefillAt(user.getHeartsRefillAt());
+        }
         return response;
     }
 }

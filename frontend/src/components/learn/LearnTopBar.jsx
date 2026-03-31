@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -27,12 +28,21 @@ export default function LearnTopBar({
   onComplete,
   sidebarOpen,
   onToggleSidebar,
+  // PROJECT mode
+  itemType,
+  submissionType,
+  onSubmitProject,
+  isSubmittingProject,
+  // Gamification
+  hearts = 5,
 }) {
-  const busy = isRunning || isGrading;
+  const busy = isRunning || isGrading || isSubmittingProject;
+  const isProject = itemType === 'PROJECT';
+  const isProjectEditor = isProject && submissionType === 'EDITOR';
 
   return (
     <div className='h-12 flex items-center justify-between px-4 bg-[#0a0a14] border-b border-[#1e1e2e] shrink-0 z-10'>
-      {/* Left: back + icons */}
+      {/* Left: back + icons + hearts */}
       <div className='flex items-center gap-1'>
         <Link
           href={`/learn/${courseId}`}
@@ -56,43 +66,81 @@ export default function LearnTopBar({
         <button className='p-2 rounded-lg text-[#6a6a82] hover:text-white hover:bg-[#1e1e2e] transition-colors' title='Bookmark'>
           <Bookmark size={16} />
         </button>
+        {/* Hearts */}
+        <div className='flex items-center gap-0.5 ml-2 px-2 py-1 rounded-lg bg-[#1e1e2e]' title={`하트 ${hearts}/5`}>
+          {[...Array(5)].map((_, i) => (
+            <span key={i} className={`text-sm leading-none ${i < hearts ? 'text-red-400' : 'text-[#3a3a52]'}`}>
+              ♥
+            </span>
+          ))}
+        </div>
       </div>
 
-      {/* Center: Run + Submit */}
+      {/* Center: context-aware buttons */}
       <div className='flex items-center gap-2'>
-        <button
-          onClick={onRun}
-          disabled={busy}
-          className={cn(
-            'flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition-all',
-            'bg-[#1e1e2e] border border-[#3a3a52] text-white hover:bg-[#2a2a3e]',
-            busy && 'opacity-50 cursor-not-allowed'
-          )}
-        >
-          {isRunning ? (
-            <Loader2 size={13} className='animate-spin' />
-          ) : (
-            <Play size={13} fill='currentColor' className='text-violet-400' />
-          )}
-          Run
-        </button>
+        {/* CODING_SET: Run + Grade */}
+        {!isProject && onRun && (
+          <button
+            onClick={onRun}
+            disabled={busy}
+            className={cn(
+              'flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition-all',
+              'bg-[#1e1e2e] border border-[#3a3a52] text-white hover:bg-[#2a2a3e]',
+              busy && 'opacity-50 cursor-not-allowed'
+            )}
+          >
+            {isRunning ? <Loader2 size={13} className='animate-spin' /> : <Play size={13} fill='currentColor' className='text-violet-400' />}
+            Run
+          </button>
+        )}
+        {!isProject && onGrade && (
+          <button
+            onClick={onGrade}
+            disabled={busy}
+            className={cn(
+              'flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition-all',
+              'bg-violet-600 hover:bg-violet-700 text-white',
+              busy && 'opacity-50 cursor-not-allowed'
+            )}
+          >
+            {isGrading ? <Loader2 size={13} className='animate-spin' /> : <CheckSquare size={13} />}
+            Submit
+          </button>
+        )}
 
-        <button
-          onClick={onGrade}
-          disabled={busy}
-          className={cn(
-            'flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition-all',
-            'bg-violet-600 hover:bg-violet-700 text-white',
-            busy && 'opacity-50 cursor-not-allowed'
-          )}
-        >
-          {isGrading ? (
-            <Loader2 size={13} className='animate-spin' />
-          ) : (
-            <CheckSquare size={13} />
-          )}
-          Submit
-        </button>
+        {/* PROJECT EDITOR: Run + Submit Project */}
+        {isProjectEditor && (
+          <>
+            <button
+              onClick={onRun}
+              disabled={busy}
+              className={cn(
+                'flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition-all',
+                'bg-[#1e1e2e] border border-[#3a3a52] text-white hover:bg-[#2a2a3e]',
+                busy && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              {isRunning ? <Loader2 size={13} className='animate-spin' /> : <Play size={13} fill='currentColor' className='text-violet-400' />}
+              Run
+            </button>
+            <button
+              onClick={onSubmitProject}
+              disabled={busy || isCompleted}
+              className={cn(
+                'flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition-all',
+                isCompleted
+                  ? 'bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 cursor-default'
+                  : 'bg-violet-600 hover:bg-violet-500 text-white',
+                busy && !isCompleted && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              {isSubmittingProject ? <Loader2 size={13} className='animate-spin' /> : <Send size={13} />}
+              {isCompleted ? 'Submitted ✓' : 'Submit Project'}
+            </button>
+          </>
+        )}
+
+        {/* PROJECT REPO: submit handled inside right panel — show nothing here */}
       </div>
 
       {/* Right: Prev / Next + Complete */}

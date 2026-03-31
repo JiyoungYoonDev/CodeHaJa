@@ -4,6 +4,7 @@ import com.codehaja.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -50,4 +51,18 @@ public class User extends BaseTimeEntity {
 
     private String passwordResetToken;
     private LocalDateTime passwordResetTokenExpiresAt;
+
+    // Gamification
+    @Builder.Default
+    private int totalXp = 0;
+
+    @Builder.Default
+    private int hearts = 5;
+
+    private LocalDateTime heartsRefillAt;
+
+    @Builder.Default
+    private int streakDays = 0;
+
+    private LocalDate lastActivityDate;
 }

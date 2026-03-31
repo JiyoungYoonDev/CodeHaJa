@@ -5,11 +5,22 @@ export const getLectureItemEntry = async (entryId) => {
   return apiFetch(`/api/lecture-item-entries/${entryId}`);
 };
 
+// Project submission
+export const submitProjectSubmission = async (itemId, payload) =>
+  apiFetch(`/api/project-submissions/${itemId}`, {
+    method: 'POST',
+    body: JSON.stringify({ submissionData: JSON.stringify(payload) }),
+  });
+
+export const getLatestProjectSubmission = async (itemId) =>
+  apiFetch(`/api/project-submissions/item/${itemId}/latest`);
+
 // Coding submission (grade + run)
-export const submitCode = async (lectureItemEntryId, { sourceCode, language }) => {
+// grade: true = Submit for grading (hearts/XP apply), false = Run only
+export const submitCode = async (lectureItemEntryId, { sourceCode, language, grade = false }) => {
   return apiFetch(`/api/coding-submissions/${lectureItemEntryId}`, {
     method: 'POST',
-    body: JSON.stringify({ sourceCode, language }),
+    body: JSON.stringify({ sourceCode, language, grade }),
   });
 };
 
@@ -35,9 +46,9 @@ export const getLectureItems = async (lectureId) => {
   return apiFetch(`/api/lectures/${lectureId}/items?size=100`);
 };
 
-// Section lectures for navigation
+// Section lectures for navigation — only published lectures visible to learners
 export const getSectionLectures = async (sectionId) => {
-  return apiFetch(`/api/course-sections/${sectionId}/lectures?size=100`);
+  return apiFetch(`/api/course-sections/${sectionId}/lectures?size=100&isPublished=true`);
 };
 
 // Course lecture progress (completed lecture IDs)
@@ -81,3 +92,17 @@ export const saveEntryProgress = async (entryId, payload) => {
 export const getEntryProgress = async (entryId) => {
   return apiFetch(`/api/progress/entries/${entryId}`);
 };
+
+// Quiz submission
+export const submitQuizSubmission = async (itemId, payload) =>
+  apiFetch(`/api/quiz-submissions/${itemId}`, {
+    method: 'POST',
+    body: JSON.stringify({
+      answers: JSON.stringify(payload.answers),
+      totalPoints: payload.totalPoints,
+      earnedPoints: payload.earnedPoints,
+    }),
+  });
+
+export const getLatestQuizSubmission = async (itemId) =>
+  apiFetch(`/api/quiz-submissions/item/${itemId}/latest`);

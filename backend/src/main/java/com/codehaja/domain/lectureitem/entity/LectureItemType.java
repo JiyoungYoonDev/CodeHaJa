@@ -7,6 +7,7 @@ public enum LectureItemType {
     CODE_BLOCK,
     QUIZ_SET,
     CODING_SET,
+    PROJECT,
     PROJECT_TASK,
     CHECKPOINT,
     TEST_BLOCK

@@ -54,11 +54,11 @@ public class ProgressController {
     }
 
     @PostMapping("/items/{itemId}")
-    public ResponseEntity<ApiResponse<Void>> saveItemProgress(
+    public ResponseEntity<ApiResponse<java.util.Map<String, Integer>>> saveItemProgress(
             @PathVariable Long itemId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        progressService.saveItemProgress(itemId, userDetails.getUsername());
-        return ResponseEntity.ok(ApiResponse.ok("Item progress saved.", null));
+        int xpGained = progressService.saveItemProgress(itemId, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok("Item progress saved.", java.util.Map.of("xpGained", xpGained)));
     }
 
     @GetMapping("/courses/{courseId}/completed-item-ids")

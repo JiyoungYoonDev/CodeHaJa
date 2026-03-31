@@ -16,6 +16,10 @@ import {
   saveItemProgress,
   getCompletedItemCount,
   getCompletedItemIds,
+  submitProjectSubmission,
+  getLatestProjectSubmission,
+  submitQuizSubmission,
+  getLatestQuizSubmission,
 } from '../../services/learn-service';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -172,5 +176,37 @@ export function useSaveLectureProgressMutation() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['lecture-progress', variables.lectureId] });
     },
+  });
+}
+
+export function useSubmitProjectMutation() {
+  return useMutation({
+    mutationFn: ({ itemId, payload }) => submitProjectSubmission(itemId, payload),
+  });
+}
+
+export function useLatestProjectSubmissionQuery(itemId, options = {}) {
+  return useQuery({
+    queryKey: ['latest-project-submission', itemId],
+    queryFn: () => getLatestProjectSubmission(itemId),
+    enabled: !!itemId,
+    retry: false,
+    ...options,
+  });
+}
+
+export function useSubmitQuizMutation() {
+  return useMutation({
+    mutationFn: ({ itemId, payload }) => submitQuizSubmission(itemId, payload),
+  });
+}
+
+export function useLatestQuizSubmissionQuery(itemId, options = {}) {
+  return useQuery({
+    queryKey: ['latest-quiz-submission', itemId],
+    queryFn: () => getLatestQuizSubmission(itemId),
+    enabled: !!itemId,
+    retry: false,
+    ...options,
   });
 }

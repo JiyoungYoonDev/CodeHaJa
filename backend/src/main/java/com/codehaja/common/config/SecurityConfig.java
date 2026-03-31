@@ -4,28 +4,32 @@ import com.codehaja.auth.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          CorsConfigurationSource corsConfigurationSource) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
@@ -66,11 +70,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/lectures/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/lectures/**").permitAll()
                         // Authenticated user endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/enrollments/courses/**").hasRole("ADMIN")
                         .requestMatchers("/api/enrollments/**").authenticated()
                         .requestMatchers("/api/progress/**").authenticated()
                         // Other
                         .requestMatchers("/api/anonymous-users/**").permitAll()
                         .requestMatchers("/api/coding-submissions/**").authenticated()
+                        .requestMatchers("/api/project-submissions/**").authenticated()
+                        .requestMatchers("/api/quiz-submissions/**").authenticated()
+                        .requestMatchers("/api/cms/dashboard/**").hasRole("ADMIN")
+                        .requestMatchers("/api/cms/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/cms/subscriptions/**").hasRole("ADMIN")
                         .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
                         .anyRequest().permitAll()
                 )

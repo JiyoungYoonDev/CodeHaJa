@@ -16,6 +16,7 @@ import com.codehaja.domain.progress.entity.LectureItemEntryProgress;
 import com.codehaja.domain.progress.entity.LectureItemProgress;
 import com.codehaja.domain.progress.entity.LectureProgress;
 import com.codehaja.domain.progress.entity.ProgressStatus;
+import com.codehaja.domain.gamification.service.XpService;
 import com.codehaja.domain.progress.repository.LectureItemEntryProgressRepository;
 import com.codehaja.domain.progress.repository.LectureItemProgressRepository;
 import com.codehaja.domain.progress.repository.LectureProgressRepository;
@@ -38,6 +39,7 @@ public class ProgressService {
     private final LectureProgressRepository lectureProgressRepository;
     private final LectureItemProgressRepository lectureItemProgressRepository;
     private final LectureItemEntryProgressRepository lectureItemEntryProgressRepository;
+    private final XpService xpService;
 
     @Transactional
     public LectureProgressDto.Response saveLectureProgress(Long lectureId, LectureProgressDto.SaveRequest request, String userEmail) {
@@ -123,7 +125,7 @@ public class ProgressService {
     }
 
     @Transactional
-    public void saveItemProgress(Long itemId, String userEmail) {
+    public int saveItemProgress(Long itemId, String userEmail) {
         User user = getUser(userEmail);
         LectureItem item = lectureItemRepository.findById(itemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_NOT_FOUND));
@@ -140,7 +142,9 @@ public class ProgressService {
         if (progress.getCompletedAt() == null) {
             progress.setCompletedAt(LocalDateTime.now());
             lectureItemProgressRepository.save(progress);
+            return xpService.award(user, XpService.XP_LECTURE_ITEM_COMPLETE);
         }
+        return 0;
     }
 
     public long getCompletedItemCount(Long courseId, String userEmail) {

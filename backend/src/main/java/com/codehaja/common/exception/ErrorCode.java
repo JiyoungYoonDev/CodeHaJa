@@ -42,6 +42,9 @@ public enum ErrorCode {
     CODING_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "CODING_404", "Coding draft not found."),
     CODING_SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "CODING_404", "Coding submission not found."),
 
+    // Gamification
+    HEART_EMPTY(HttpStatus.valueOf(422), "HEART_422", "하트가 없습니다. 4시간 후 충전되거나 이전 강의를 복습하면 충전됩니다."),
+
     // Auth
     AUTH_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "AUTH_409", "Email already exists."),
     AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH_401", "Invalid email or password."),

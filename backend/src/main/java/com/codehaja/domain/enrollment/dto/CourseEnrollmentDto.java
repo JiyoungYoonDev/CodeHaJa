@@ -18,4 +18,13 @@ public class CourseEnrollmentDto {
         private boolean enrolled;
         private LocalDateTime enrolledAt;
     }
+
+    @Getter @Setter
+    public static class EnrollmentListItem {
+        private Long id;
+        private Long userId;
+        private String userEmail;
+        private String userName;
+        private LocalDateTime enrolledAt;
+    }
 }

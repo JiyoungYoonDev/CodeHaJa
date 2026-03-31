@@ -7,6 +7,7 @@ import com.codehaja.domain.lecture.repository.LectureRepository;
 import com.codehaja.domain.lectureitem.dto.LectureItemDto;
 import com.codehaja.domain.lectureitem.entity.LectureItem;
 import com.codehaja.domain.lectureitem.entity.LectureItemType;
+import com.codehaja.domain.lectureitem.entity.ReviewStatus;
 import com.codehaja.domain.lectureitem.mapper.LectureItemMapper;
 import com.codehaja.domain.lectureitem.repository.LectureItemRepository;
 import com.codehaja.domain.lectureitementry.repository.LectureItemEntryRepository;
@@ -51,7 +52,8 @@ public class LectureItemService {
             int page,
             int size,
             String keyword,
-            LectureItemType itemType
+            LectureItemType itemType,
+            ReviewStatus reviewStatus
     ) {
         getLectureOrThrow(lectureId);
 
@@ -60,7 +62,7 @@ public class LectureItemService {
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
         Page<LectureItemDto.SummaryResponse> result =
-                lectureItemRepository.searchLectureItems(lectureId, keyword, itemType, pageable);
+                lectureItemRepository.searchLectureItems(lectureId, keyword, itemType, reviewStatus, pageable);
 
         result.getContent().forEach(item ->
                 lectureItemEntryRepository.findFirstByLectureItemIdOrderBySortOrderAsc(item.getId())
@@ -86,6 +88,18 @@ public class LectureItemService {
 
         lectureItemMapper.updateEntityFromDto(request, lectureItem);
         applyDefaultsOnUpdate(lectureItem);
+
+        return lectureItemMapper.toDetailResponse(lectureItem);
+    }
+
+    @Transactional
+    public LectureItemDto.DetailResponse updateReviewStatus(Long lectureItemId, LectureItemDto.ReviewStatusRequest request) {
+        LectureItem lectureItem = lectureItemRepository.findById(lectureItemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.LECTURE_ITEM_NOT_FOUND));
+
+        if (request.getReviewStatus() != null) {
+            lectureItem.setReviewStatus(request.getReviewStatus());
+        }
 
         return lectureItemMapper.toDetailResponse(lectureItem);
     }

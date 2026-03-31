@@ -1,24 +1,31 @@
-import { AlertTriangle, Copy } from 'lucide-react';
+import { AlertTriangle, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 import LessonXpBadge from './LessonXpBadge';
 import LessonHintSection from './LessonHintSection';
 import LessonRating from './LessonRating';
 import QuizPanel from './QuizPanel';
-import { tiptapToHtml } from '@/lib/tiptap-renderer';
+import { tiptapToHtml, applyMathToHtml } from '@/lib/tiptap-renderer';
 
-export default function LessonContentPanel({ item, onComplete, isCompleted }) {
+export default function LessonContentPanel({ item, onComplete, isCompleted, currentProblem, problemIndex, totalProblems, onPrevProblem, onNextProblem }) {
   const isCoding = item?.itemType === 'CODING_SET';
-  const isQuiz = item?.itemType === 'QUIZ_SET';
-  const hints = item?.contentJson?.hints ?? [];
-  const expectedOutput = item?.contentJson?.expectedOutput ?? null;
+  const isQuiz = item?.itemType === 'QUIZ_SET' || item?.itemType === 'TEST_BLOCK';
+  const isProject = item?.itemType === 'PROJECT';
 
-  // Coding items: new format wraps the doc in { description: {...}, language, starterCode, ... }
-  // Legacy format: bare Tiptap doc stored directly as contentJson
-  const tiptapDoc = isCoding
-    ? (item?.contentJson?.type === 'doc' ? item.contentJson : item?.contentJson?.description)
+  // For coding/project items, use currentProblem (or contentJson) as the source
+  const codingSource = currentProblem ?? item?.contentJson ?? null;
+  const hints = isCoding ? (codingSource?.hints ?? []) : (item?.contentJson?.hints ?? []);
+  const expectedOutput = isCoding ? (codingSource?.expectedOutput ?? null) : (item?.contentJson?.expectedOutput ?? null);
+
+  // PROJECT: description lives in contentJson.description
+  // CODING: new format wraps the doc in { description: {...}, ... }; legacy: bare Tiptap doc
+  // Other: contentJson is the doc itself
+  const tiptapDoc = (isCoding || isProject)
+    ? (codingSource?.type === 'doc' ? codingSource : codingSource?.description)
     : item?.contentJson;
-  const tiptapHtml = tiptapToHtml(tiptapDoc);
+  const tiptapHtml = applyMathToHtml(tiptapToHtml(tiptapDoc));
   // Use || not ?? so that empty string ("") from an empty Tiptap doc falls back to item.description
   const description = tiptapHtml || item?.description || null;
+
+  const requirements = isProject ? (item?.contentJson?.requirements ?? []) : [];
 
   if (process.env.NODE_ENV === 'development') {
     // console.log('[LessonContentPanel] item.contentJson:', item?.contentJson);
@@ -53,6 +60,32 @@ export default function LessonContentPanel({ item, onComplete, isCompleted }) {
         {item?.title ?? 'Lesson Content'}
       </h1>
 
+      {/* Multi-problem navigation */}
+      {totalProblems > 1 && (
+        <div className='mt-4 flex items-center gap-3'>
+          <button
+            onClick={onPrevProblem}
+            disabled={problemIndex === 0}
+            className='p-1.5 rounded-md bg-[#1e1e32] text-[#9090a8] hover:text-white disabled:opacity-30 transition-colors'
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className='text-sm text-[#9090a8]'>
+            Problem <span className='text-white font-semibold'>{problemIndex + 1}</span> / {totalProblems}
+            {currentProblem?.title && (
+              <span className='ml-2 text-[#7070a0]'>— {currentProblem.title}</span>
+            )}
+          </span>
+          <button
+            onClick={onNextProblem}
+            disabled={problemIndex === totalProblems - 1}
+            className='p-1.5 rounded-md bg-[#1e1e32] text-[#9090a8] hover:text-white disabled:opacity-30 transition-colors'
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Description */}
       {description && (
         <div
@@ -76,6 +109,23 @@ export default function LessonContentPanel({ item, onComplete, isCompleted }) {
           >
             <Copy size={14} />
           </button>
+        </div>
+      )}
+
+      {/* Requirements (project only) */}
+      {isProject && requirements.length > 0 && (
+        <div className='mt-5 space-y-2'>
+          <p className='text-xs font-black uppercase tracking-widest text-[#5a5a72]'>Requirements</p>
+          <ul className='space-y-1.5'>
+            {requirements.map((req, i) => (
+              <li key={i} className='flex items-start gap-2 text-sm text-[#b0b0c8]'>
+                <span className='mt-0.5 shrink-0 w-4 h-4 rounded-full border border-[#3a3a52] flex items-center justify-center text-[10px] text-[#5a5a72] font-bold'>
+                  {i + 1}
+                </span>
+                {req}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

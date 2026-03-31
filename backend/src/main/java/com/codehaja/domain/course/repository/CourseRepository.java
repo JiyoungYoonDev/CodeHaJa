@@ -12,6 +12,8 @@ import com.codehaja.domain.course.entity.Difficulty;
 
 
 public interface CourseRepository extends JpaRepository<Course, Long> {
+
+    long countByStatus(CourseStatus status);
     
     @EntityGraph(attributePaths = {"category"})
     List<Course> findAllByOrderByCreatedAtDesc();

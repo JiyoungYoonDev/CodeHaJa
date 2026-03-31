@@ -1,3 +1,24 @@
+import katex from 'katex';
+
+/**
+ * Post-processes an HTML string and renders $...$ / $$...$$ patterns with KaTeX.
+ * Only matches math outside of HTML tags (excludes < and > in the pattern).
+ */
+export function applyMathToHtml(html) {
+  if (!html) return html;
+  // Block math $$...$$ first
+  let result = html.replace(/\$\$([^$<>]+)\$\$/g, (_, expr) => {
+    try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
+    catch { return `$$${expr}$$`; }
+  });
+  // Inline math $...$
+  result = result.replace(/\$([^$\n<>]+)\$/g, (_, expr) => {
+    try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
+    catch { return `$${expr}$`; }
+  });
+  return result;
+}
+
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&amp;')

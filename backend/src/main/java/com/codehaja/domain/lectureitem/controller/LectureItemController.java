@@ -4,6 +4,7 @@ import com.codehaja.common.api.ApiResponse;
 import com.codehaja.common.api.PageResponse;
 import com.codehaja.domain.lectureitem.dto.LectureItemDto;
 import com.codehaja.domain.lectureitem.entity.LectureItemType;
+import com.codehaja.domain.lectureitem.entity.ReviewStatus;
 import com.codehaja.domain.lectureitem.service.LectureItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,10 +34,11 @@ public class LectureItemController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) LectureItemType itemType
+            @RequestParam(required = false) LectureItemType itemType,
+            @RequestParam(required = false) ReviewStatus reviewStatus
     ) {
         Page<LectureItemDto.SummaryResponse> result =
-                lectureItemService.getLectureItems(lectureId, page, size, keyword, itemType);
+                lectureItemService.getLectureItems(lectureId, page, size, keyword, itemType, reviewStatus);
 
         return ResponseEntity.ok(ApiResponse.ok(PageResponse.from(result)));
     }
@@ -64,6 +66,15 @@ public class LectureItemController {
     ) {
         lectureItemService.deleteLectureItem(lectureItemId);
         return ResponseEntity.ok(ApiResponse.ok("Lecture item deleted successfully."));
+    }
+
+    @PatchMapping("/api/lecture-items/{lectureItemId}/review-status")
+    public ResponseEntity<ApiResponse<LectureItemDto.DetailResponse>> updateReviewStatus(
+            @PathVariable Long lectureItemId,
+            @RequestBody LectureItemDto.ReviewStatusRequest request
+    ) {
+        LectureItemDto.DetailResponse response = lectureItemService.updateReviewStatus(lectureItemId, request);
+        return ResponseEntity.ok(ApiResponse.ok("Review status updated.", response));
     }
 
     @PatchMapping("/api/lectures/{lectureId}/items/reorder")
