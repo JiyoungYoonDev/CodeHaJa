@@ -1,13 +1,14 @@
-'use client';
+import { Suspense } from 'react';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Code2, Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { resetPasswordApi } from '../../../../services/auth-service';
+function ResetPasswordPageInner() {
+  'use client';
+  const { useState } = require('react');
+  const { useRouter, useSearchParams } = require('next/navigation');
+  const Link = require('next/link').default;
+  const { Code2, Eye, EyeOff } = require('lucide-react');
+  const { Button } = require('@/components/ui/button');
+  const { resetPasswordApi } = require('../../../../services/auth-service');
 
-export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') ?? '';
@@ -20,7 +21,7 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError('');
     if (password.length < 8) {
-      setError('비밀번호는 8자 이상이어야 합니다.');
+      setError('Password must be at least 8 characters.');
       return;
     }
     setLoading(true);
@@ -28,7 +29,7 @@ export default function ResetPasswordPage() {
       await resetPasswordApi(token, password);
       router.push('/login?reset=success');
     } catch {
-      setError('토큰이 유효하지 않거나 만료되었습니다.');
+      setError('The token is invalid or has expired.');
     } finally {
       setLoading(false);
     }
@@ -41,20 +42,26 @@ export default function ResetPasswordPage() {
         <div className='p-8 space-y-6'>
           <div className='flex flex-col items-center gap-2'>
             <Code2 size={32} className='text-indigo-600' />
-            <h1 className='text-2xl font-black text-slate-900 dark:text-slate-50'>새 비밀번호 설정</h1>
-            <p className='text-sm text-slate-400 dark:text-slate-500'>새로운 비밀번호를 입력해주세요.</p>
+            <h1 className='text-2xl font-black text-slate-900 dark:text-slate-50'>
+              Reset Password
+            </h1>
+            <p className='text-sm text-slate-400 dark:text-slate-500'>
+              Please enter your new password.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className='space-y-4'>
             <div className='space-y-1'>
-              <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>새 비밀번호</label>
+              <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
+                New Password
+              </label>
               <div className='relative'>
                 <input
                   type={showPw ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder='8자 이상'
+                  placeholder='At least 8 characters'
                   className='w-full px-4 py-3 pr-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-300 dark:placeholder:text-slate-600'
                 />
                 <button
@@ -68,21 +75,38 @@ export default function ResetPasswordPage() {
             </div>
 
             {error && (
-              <p className='text-sm text-rose-500 bg-rose-50 dark:bg-rose-950/50 px-4 py-3 rounded-xl'>{error}</p>
+              <p className='text-sm text-rose-500 bg-rose-50 dark:bg-rose-950/50 px-4 py-3 rounded-xl'>
+                {error}
+              </p>
             )}
 
-            <Button type='submit' className='w-full h-12 text-base rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-950' disabled={loading}>
-              {loading ? '변경 중...' : '비밀번호 변경하기'}
+            <Button
+              type='submit'
+              className='w-full h-12 text-base rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-950'
+              disabled={loading}
+            >
+              {loading ? 'Changing...' : 'Change Password'}
             </Button>
           </form>
 
           <p className='text-center text-sm text-slate-400 dark:text-slate-500'>
-            <Link href='/login' className='font-bold text-indigo-600 dark:text-indigo-400 hover:underline'>
-              로그인으로 돌아가기
+            <Link
+              href='/login'
+              className='font-bold text-indigo-600 dark:text-indigo-400 hover:underline'
+            >
+              Back to Login
             </Link>
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordPageInner />
+    </Suspense>
   );
 }
