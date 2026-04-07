@@ -23,7 +23,9 @@ public class CorsConfig {
         List<String> allowedOrigins = new ArrayList<>(List.of(
                 "http://localhost:3000",
                 "http://localhost:3001",
-                "http://localhost:*"
+                "http://localhost:*",
+                "http://172.27.*:*",
+                "http://192.168.*:*"
         ));
         if (extraOrigins != null && !extraOrigins.isBlank()) {
             for (String origin : extraOrigins.split(",")) {
@@ -33,7 +35,7 @@ public class CorsConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(allowedOrigins);
-        configuration.setAllowedMethods(List.of("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

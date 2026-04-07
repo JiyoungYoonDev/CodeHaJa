@@ -192,6 +192,9 @@ public class LectureItemService {
     }
 
     private void applyDefaultsOnCreate(Long lectureId, LectureItem lectureItem) {
+        if (lectureItem.getReviewStatus() == null) {
+            lectureItem.setReviewStatus(ReviewStatus.DRAFT);
+        }
         if (lectureItem.getPoints() == null) {
             lectureItem.setPoints(0);
         }

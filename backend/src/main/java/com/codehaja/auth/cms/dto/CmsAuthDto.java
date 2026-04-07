@@ -21,6 +21,20 @@ public class CmsAuthDto {
 
     @Getter
     @Setter
+    public static class CreateAdminRequest {
+        @NotBlank
+        @Email
+        private String email;
+
+        @NotBlank
+        private String password;
+
+        @NotBlank
+        private String name;
+    }
+
+    @Getter
+    @Setter
     @Builder
     public static class MeResponse {
         private Long id;

@@ -3,10 +3,14 @@ package com.codehaja.domain.lectureitem.entity;
 import com.codehaja.common.converter.JsonNodeConverter;
 import com.codehaja.common.entity.BaseTimeEntity;
 import com.codehaja.domain.lecture.entity.Lecture;
+import com.codehaja.domain.lectureitementry.entity.LectureItemEntry;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "lecture_items")
@@ -47,4 +51,7 @@ public class LectureItem extends BaseTimeEntity {
 
     @Column(name = "is_required", nullable = false)
     private Boolean isRequired;
+
+    @OneToMany(mappedBy = "lectureItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LectureItemEntry> entries = new ArrayList<>();
 }

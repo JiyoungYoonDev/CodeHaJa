@@ -6,6 +6,8 @@ import com.codehaja.common.entity.BaseTimeEntity;
 import com.codehaja.domain.lectureitem.entity.LectureItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +27,7 @@ public class QuizSubmission extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lecture_item_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private LectureItem lectureItem;
 
     // Array of { blockId, quizType, answer, isCorrect, points }

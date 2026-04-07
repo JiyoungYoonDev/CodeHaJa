@@ -86,10 +86,34 @@ public class CmsAuthService {
         }
     }
 
+    @Transactional
+    public CmsAuthDto.MeResponse createAdmin(CmsAuthDto.CreateAdminRequest request) {
+        if (adminRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS);
+        }
+
+        Admin admin = Admin.builder()
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .name(request.getName())
+                .failedAttempts(0)
+                .build();
+        adminRepository.save(admin);
+
+        return toMeResponse(admin);
+    }
+
     public CmsAuthDto.MeResponse getMe(String email) {
         Admin admin = adminRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));
         return toMeResponse(admin);
+    }
+
+    /**
+     * admin이 1명이라도 있으면 true
+     */
+    public boolean hasAnyAdmin() {
+        return adminRepository.count() > 0;
     }
 
     private void issueTokens(Admin admin, HttpServletResponse response) {

@@ -2,11 +2,15 @@ package com.codehaja.domain.lecture.entity;
 
 import com.codehaja.common.converter.JsonNodeConverter;
 import com.codehaja.common.entity.BaseTimeEntity;
+import com.codehaja.domain.lectureitem.entity.LectureItem;
 import com.codehaja.domain.section.entity.CourseSection;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "lectures")
@@ -47,4 +51,7 @@ public class Lecture extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "lecture_type", nullable = false, length = 30)
     private LectureType lectureType;
+
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LectureItem> lectureItems = new ArrayList<>();
 }

@@ -5,6 +5,8 @@ import com.codehaja.common.converter.JsonNodeConverter;
 import com.codehaja.common.entity.BaseTimeEntity;
 import com.codehaja.domain.lectureitem.entity.LectureItem;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +27,7 @@ public class CodingSubmission extends BaseTimeEntity {
 
     @JoinColumn(name = "lecture_item_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private LectureItem lectureItem;
 
     @Column(name = "source_code", columnDefinition = "TEXT", nullable = false)

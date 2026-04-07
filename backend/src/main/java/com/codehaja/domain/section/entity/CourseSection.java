@@ -2,9 +2,13 @@ package com.codehaja.domain.section.entity;
 
 import com.codehaja.common.entity.BaseTimeEntity;
 import com.codehaja.domain.course.entity.Course;
+import com.codehaja.domain.lecture.entity.Lecture;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "course_sections")
@@ -32,4 +36,7 @@ public class CourseSection extends BaseTimeEntity {
 
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder;
+
+    @OneToMany(mappedBy = "courseSection", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Lecture> lectures = new ArrayList<>();
 }

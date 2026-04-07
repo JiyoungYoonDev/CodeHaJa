@@ -4,6 +4,8 @@ import com.codehaja.auth.entity.User;
 import com.codehaja.common.entity.BaseTimeEntity;
 import com.codehaja.domain.lectureitem.entity.LectureItem;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,6 +32,7 @@ public class LectureItemProgress extends BaseTimeEntity {
 
     @JoinColumn(name = "lecture_item_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private LectureItem lectureItem;
 
     @Column(name = "completed_at")

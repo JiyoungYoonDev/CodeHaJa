@@ -80,6 +80,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/quiz-submissions/**").authenticated()
                         .requestMatchers("/api/cms/dashboard/**").hasRole("ADMIN")
                         .requestMatchers("/api/cms/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/cms/admins/**").hasRole("ADMIN")
                         .requestMatchers("/api/cms/subscriptions/**").hasRole("ADMIN")
                         .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
                         .anyRequest().permitAll()
