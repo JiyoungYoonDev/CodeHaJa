@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import CodeEditorFileTree from './CodeEditorFileTree';
 import MonacoEditorWrapper from './MonacoEditorWrapper';
 import CodeEditorToolbar from './CodeEditorToolbar';
 import CodeRunOutput from './CodeRunOutput';
+import InteractiveTerminal from './InteractiveTerminal';
 
 export default function CodeEditorPanel({
   item,
@@ -15,21 +17,35 @@ export default function CodeEditorPanel({
   onCodeChange,
   runResult,
   outputMode,
+  isRunning = false,
+  onRunExit,
 }) {
   const source = currentProblem ?? item?.contentJson ?? null;
   const language = source?.language ?? 'python';
   const folderName = item?.title ?? '실습';
 
-  // Current file content shown in Monaco
   const code = activeFile !== null ? (filesContent[activeFile] ?? '') : '';
 
-  async function handleSave() {
-    // Draft save requires entry — placeholder for future implementation
+  // Show terminal while running + after exit until Grade is clicked
+  const [showTerminal, setShowTerminal] = useState(false);
+
+  useEffect(() => {
+    if (isRunning) setShowTerminal(true);
+  }, [isRunning]);
+
+  // Switch back to static output when Grade result arrives
+  useEffect(() => {
+    if (outputMode === 'grade' && runResult) setShowTerminal(false);
+  }, [outputMode, runResult]);
+
+  function handleTerminalExit() {
+    onRunExit?.();
   }
+
+  async function handleSave() {}
 
   return (
     <div className='flex-1 flex flex-col min-w-0 h-full'>
-      {/* File tree + Editor */}
       <div className='flex flex-1 min-h-0'>
         <CodeEditorFileTree
           folderName={folderName}
@@ -42,12 +58,20 @@ export default function CodeEditorPanel({
         </div>
       </div>
 
-      {/* Toolbar: Save / History / AI */}
       <CodeEditorToolbar onSave={handleSave} />
 
-      {/* Output */}
-      <div className='min-h-14 max-h-44 overflow-auto bg-[#0e0e1a] border-t border-[#1e1e2e]'>
-        <CodeRunOutput result={runResult} mode={outputMode} />
+      {/* Output area */}
+      <div className='min-h-30 max-h-56 overflow-auto bg-[#0e0e1a] border-t border-[#1e1e2e]'>
+        {showTerminal ? (
+          <InteractiveTerminal
+            code={filesContent[activeFile] ?? ''}
+            language={language}
+            running={isRunning}
+            onExit={handleTerminalExit}
+          />
+        ) : (
+          <CodeRunOutput result={runResult} mode={outputMode} />
+        )}
       </div>
     </div>
   );

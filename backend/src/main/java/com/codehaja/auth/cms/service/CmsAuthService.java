@@ -103,6 +103,26 @@ public class CmsAuthService {
         return toMeResponse(admin);
     }
 
+    @Transactional
+    public CmsAuthDto.MeResponse refresh(String refreshToken, HttpServletResponse response) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BusinessException(ErrorCode.AUTH_INVALID_TOKEN, "Refresh token is missing.");
+        }
+
+        Admin admin = adminRepository.findAll().stream()
+                .filter(a -> refreshToken.equals(a.getRefreshTokenHash()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_INVALID_TOKEN, "Invalid refresh token."));
+
+        if (admin.getRefreshTokenExpiresAt() == null
+                || admin.getRefreshTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.AUTH_INVALID_TOKEN, "Refresh token has expired.");
+        }
+
+        issueTokens(admin, response);
+        return toMeResponse(admin);
+    }
+
     public CmsAuthDto.MeResponse getMe(String email) {
         Admin admin = adminRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_UNAUTHORIZED));

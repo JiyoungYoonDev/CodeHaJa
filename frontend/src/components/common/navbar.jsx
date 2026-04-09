@@ -39,9 +39,9 @@ export default function Navbar() {
       <div className='max-w-[100rem] mx-auto flex h-16 items-center justify-between px-6'>
         {/* Logo */}
         <Link href='/' className='flex items-center gap-2'>
-          <Code2 size={28} className='text-indigo-600' />
+          <Code2 size={28} className='text-primary' />
           <span className='text-xl font-black tracking-tight text-foreground'>
-            Code<span className='text-indigo-600'>Haja</span>
+            Code<span className='text-primary'>Haja</span>
           </span>
         </Link>
 
@@ -100,9 +100,9 @@ export default function Navbar() {
                     onClick={() => setOpen(false)}
                     className='flex items-center gap-2'
                   >
-                    <Code2 size={24} className='text-indigo-600' />
+                    <Code2 size={24} className='text-primary' />
                     <span className='text-lg font-black tracking-tight text-foreground'>
-                      Code<span className='text-indigo-600'>Haja</span>
+                      Code<span className='text-primary'>Haja</span>
                     </span>
                   </Link>
                 </SheetTitle>
@@ -117,7 +117,7 @@ export default function Navbar() {
                     className={cn(
                       'px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                       pathname === link.href
-                        ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600'
+                        ? 'bg-accent text-primary'
                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                     )}
                   >

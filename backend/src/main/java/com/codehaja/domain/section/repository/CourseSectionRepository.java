@@ -28,4 +28,5 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
         WHERE cs.course.id = :courseId
     """)
     Integer findMaxSortOrderByCourseId(Long courseId);
+
 }

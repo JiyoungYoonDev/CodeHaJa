@@ -125,7 +125,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-white dark:bg-neutral-950 text-slate-900 dark:text-slate-50;
+    @apply bg-background text-foreground;
   }
 }
 
@@ -188,13 +188,16 @@
 .tiptap-content {
   color: #c0c0d8;
   font-size: 15px;
-  line-height: 1.75;
+  line-height: 1.8;
 }
 .tiptap-content p {
-  margin-top: 0.75rem;
+  margin-top: 0.875rem;
 }
 .tiptap-content p:first-child {
   margin-top: 0;
+}
+.tiptap-content em {
+  color: #a0a0c0;
 }
 .tiptap-content h1,
 .tiptap-content h2,
@@ -204,17 +207,27 @@
 .tiptap-content h6 {
   color: #ffffff;
   font-weight: 700;
-  margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
 .tiptap-content h1 {
   font-size: 1.5rem;
+  margin-top: 2rem;
 }
 .tiptap-content h2 {
   font-size: 1.25rem;
+  margin-top: 2rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #2a2a3e;
 }
 .tiptap-content h3 {
   font-size: 1.1rem;
+  margin-top: 1.5rem;
+  color: #c084fc;
+}
+.tiptap-content h4 {
+  font-size: 1rem;
+  margin-top: 1.25rem;
+  color: #818cf8;
 }
 .tiptap-content strong {
   color: #e0e0f0;
@@ -245,21 +258,28 @@
 .tiptap-content ul {
   list-style: disc;
   padding-left: 1.5rem;
-  margin-top: 0.5rem;
+  margin: 0.75rem 0;
 }
 .tiptap-content ol {
   list-style: decimal;
   padding-left: 1.5rem;
-  margin-top: 0.5rem;
+  margin: 0.75rem 0;
 }
 .tiptap-content li {
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
+  padding-left: 0.25rem;
+}
+.tiptap-content li::marker {
+  color: #818cf8;
 }
 .tiptap-content blockquote {
-  border-left: 3px solid #4a4a6a;
-  padding-left: 1rem;
-  color: #8a8aa8;
-  margin-top: 0.75rem;
+  border-left: 3px solid #818cf8;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: #1a1a2e;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #c0c0d8;
+  font-size: 14.5px;
 }
 .tiptap-content a {
   color: #818cf8;
@@ -282,4 +302,658 @@
 .tiptap-content .task-item input[type='checkbox'] {
   margin: 0;
   accent-color: #818cf8;
+}
+
+.tiptap-content .math-block {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: #1a1a2e;
+  border: 1px solid #2a2a3e;
+  border-radius: 0.75rem;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.tiptap-content .graph-block {
+  margin: 1.5rem 0;
+  border: 1px solid #2a2a3e;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #0d1117;
+  contain: paint;
+}
+
+.tiptap-content .graph-block-label {
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #2dd4bf;
+  border-bottom: 1px solid #2a2a3e;
+}
+
+.tiptap-content .graph-block-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.tiptap-content .graph-block-container svg {
+  display: block;
+}
+
+/* Number line (inequality) blocks */
+.tiptap-content .number-line-block {
+  margin: 1.5rem 0;
+  border: 1px solid #2a2a3e;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+.tiptap-content .number-line-label {
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #2dd4bf;
+  border-bottom: 1px solid #2a2a3e;
+}
+
+.tiptap-content .number-line-container {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+}
+
+.tiptap-content .number-line-container svg {
+  display: block;
+}
+
+/* Checkpoint blocks (interactive practice inline) */
+.tiptap-content .checkpoint-block {
+  margin: 1.25rem 0;
+  border: 1px solid #3a3a5e;
+  border-left: 3px solid #7c3aed;
+  border-radius: 0.75rem;
+  background: #161628;
+  padding: 1rem 1.25rem;
+}
+.tiptap-content .checkpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.tiptap-content .checkpoint-icon { font-size: 1rem; }
+.tiptap-content .checkpoint-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a78bfa;
+}
+.tiptap-content .checkpoint-title-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.01em;
+}
+.tiptap-content .checkpoint-question {
+  color: #e2e2f0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+.tiptap-content .checkpoint-input-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.tiptap-content .checkpoint-input-area .checkpoint-mathfield {
+  flex: 1;
+  min-width: 180px;
+}
+.tiptap-content .checkpoint-input {
+  flex: 1;
+  min-width: 180px;
+  background: #1a1a2e;
+  border: 1px solid #2a2a3e;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, monospace;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.tiptap-content .checkpoint-input:focus {
+  border-color: #7c3aed;
+}
+.tiptap-content .checkpoint-input:disabled {
+  opacity: 0.6;
+}
+.tiptap-content .checkpoint-btn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tiptap-content .checkpoint-btn:hover { background: #6d28d9; }
+.tiptap-content .checkpoint-btn:disabled { opacity: 0.5; cursor: default; }
+.tiptap-content .checkpoint-btn-correct { background: #059669; }
+.tiptap-content .checkpoint-btn-wrong { background: #dc2626; }
+.tiptap-content .checkpoint-hint-btn {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #3a3a52;
+  border-radius: 9999px;
+  background: transparent;
+  color: #9090a8;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tiptap-content .checkpoint-hint-btn:hover {
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+.tiptap-content .checkpoint-hint {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #1e1e32;
+  border-left: 2px solid #f59e0b80;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
+  color: #b0b0c8;
+}
+.tiptap-content .checkpoint-feedback {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.tiptap-content .checkpoint-correct {
+  background: #059669/15;
+  color: #34d399;
+  border-left: 2px solid #059669;
+}
+.tiptap-content .checkpoint-wrong {
+  background: #dc2626/15;
+  color: #f87171;
+  border-left: 2px solid #dc2626;
+}
+.tiptap-content .checkpoint-retry {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid #3a3a52;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: #9090a8;
+  font-size: 0.7rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+.tiptap-content .checkpoint-retry:hover {
+  border-color: #7c3aed;
+  color: #a78bfa;
+}
+.tiptap-content .checkpoint-mathfield {
+  display: block;
+  width: 100%;
+  min-height: 2.5rem;
+  font-size: 1.1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #3a3a52;
+  background: #12121f;
+  color: #e0e0f0;
+  padding: 0.4rem 0.75rem;
+  --caret-color: #a78bfa;
+  --selection-background-color: rgba(124, 58, 237, 0.3);
+  --contains-highlight-background-color: transparent;
+  --smart-fence-color: #7c3aed;
+  --text-font-family: 'DM Sans', system-ui, sans-serif;
+}
+.tiptap-content .checkpoint-mathfield:focus-within {
+  border-color: #7c3aed;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+.tiptap-content .checkpoint-mathfield[read-only] {
+  opacity: 0.6;
+}
+
+/* ─── CheckpointStepper math-field ─── */
+.stepper-mathfield {
+  display: block;
+  flex: 1;
+  min-height: 2.5rem;
+  font-size: 1.1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #3a3a52;
+  background: #12121f;
+  color: #e0e0f0;
+  padding: 0.4rem 0.75rem;
+  --caret-color: #a78bfa;
+  --selection-background-color: rgba(124, 58, 237, 0.3);
+  --contains-highlight-background-color: transparent;
+  --smart-fence-color: #7c3aed;
+  --text-font-family: 'DM Sans', system-ui, sans-serif;
+}
+.stepper-mathfield:focus-within {
+  border-color: #7c3aed;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+.stepper-mathfield[read-only] {
+  opacity: 0.6;
+}
+
+/* Educational labels: Solution, Problem, Answer */
+.tiptap-content .edu-label {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.tiptap-content .edu-label__tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: #818cf8;
+  color: #0d0d1a;
+}
+.tiptap-content .edu-label--Problem .edu-label__tag {
+  background: #f59e0b;
+}
+.tiptap-content .edu-label--Answer .edu-label__tag {
+  background: #10b981;
+}
+
+/* Conclusion highlights: "Therefore, ..." */
+.tiptap-content .edu-conclusion {
+  border-left: 3px solid #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  padding: 0.6rem 1rem;
+  margin: 0.75rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+.tiptap-content .edu-conclusion p {
+  color: #a7f3d0;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ─── Solution Accordion ─── */
+.tiptap-content .solution-accordion {
+  margin-top: 1.5rem;
+  border: 1px solid #2a2a3e;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #12121f;
+}
+.tiptap-content .solution-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.25rem;
+  background: #1a1a2e;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background 0.2s;
+}
+.tiptap-content .solution-trigger::-webkit-details-marker {
+  display: none;
+}
+.tiptap-content .solution-trigger:hover {
+  background: #1e1e36;
+}
+.tiptap-content .solution-icon {
+  font-size: 18px;
+}
+.tiptap-content .solution-text {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #818cf8;
+}
+.tiptap-content .solution-hint {
+  flex: 1;
+  font-size: 13px;
+  color: #5a5a72;
+  font-style: italic;
+}
+.tiptap-content .solution-chevron {
+  font-size: 10px;
+  color: #5a5a72;
+  transition: transform 0.2s;
+}
+.tiptap-content .solution-accordion[open] .solution-chevron {
+  transform: rotate(90deg);
+}
+.tiptap-content .solution-content {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #2a2a3e;
+}
+
+/* ─── Step indicators within Solution ─── */
+.tiptap-content .step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: -0.5rem;
+}
+.tiptap-content .step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #818cf8;
+  color: #0d0d1a;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.tiptap-content hr.step-divider {
+  border: none;
+  border-top: 1px dashed #2a2a3e;
+  margin: 1.25rem 0 0.5rem;
+}
+
+/* ─── Common Mistakes Accordion ─── */
+.tiptap-content .mistakes-accordion {
+  margin-top: 2rem;
+  border: 1px solid #f59e0b30;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #0d0d18;
+}
+.tiptap-content .mistakes-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.25rem;
+  background: linear-gradient(135deg, #1a1520 0%, #1a1a2e 100%);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background 0.2s;
+}
+.tiptap-content .mistakes-trigger::-webkit-details-marker { display: none; }
+.tiptap-content .mistakes-trigger:hover { background: #1e1828; }
+.tiptap-content .mistakes-icon { font-size: 18px; }
+.tiptap-content .mistakes-text {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f59e0b;
+}
+.tiptap-content .mistakes-chevron {
+  font-size: 10px;
+  color: #5a5a72;
+  transition: transform 0.2s;
+}
+.tiptap-content .mistakes-accordion[open] .mistakes-chevron {
+  transform: rotate(90deg);
+}
+.tiptap-content .mistakes-content {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #f59e0b20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.tiptap-content .mistakes-content > ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+/* Reset nested stacking — all cards at same level */
+.tiptap-content .mistakes-content > ul,
+.tiptap-content .mistakes-content > p {
+  margin: 0;
+}
+
+/* Mistake card */
+.tiptap-content .mistake-card {
+  list-style: none;
+  border: 1px solid #2a2a3e;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #12121f;
+  margin: 0;
+}
+.tiptap-content .mistake-details {
+  width: 100%;
+}
+.tiptap-content .mistake-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #e8d5a0;
+  background: linear-gradient(135deg, #1a1525 0%, #18182a 100%);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background 0.2s;
+}
+.tiptap-content .mistake-title::-webkit-details-marker { display: none; }
+.tiptap-content .mistake-title:hover { background: linear-gradient(135deg, #221c30 0%, #1e1e32 100%); }
+.tiptap-content .mistake-title-icon { font-size: 15px; }
+.tiptap-content .mistake-title strong { font-weight: 700; }
+.tiptap-content .mistake-chevron {
+  margin-left: auto;
+  font-size: 10px;
+  color: #5a5a72;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.tiptap-content .mistake-details[open] .mistake-chevron {
+  transform: rotate(90deg);
+}
+.tiptap-content .mistake-details[open] .mistake-title {
+  border-bottom: 1px solid #2a2a3e;
+}
+.tiptap-content .mistake-body {
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: #b0b0c8;
+  line-height: 1.7;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.tiptap-content .mistake-body > p {
+  margin: 0;
+}
+
+/* ✗ Wrong block */
+.tiptap-content .mistake-wrong {
+  border-radius: 0.625rem;
+  border: 1px solid #dc262625;
+  overflow: hidden;
+  background: #140a0e;
+}
+.tiptap-content .mistake-wrong-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  background: #dc262615;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #f87171;
+}
+.tiptap-content .mistake-mark-wrong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+.tiptap-content .mistake-wrong-body {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+  color: #d0a0a0;
+  line-height: 1.7;
+}
+.tiptap-content .mistake-wrong-body p { margin: 0.25rem 0; }
+
+/* ✓ Correct block */
+.tiptap-content .mistake-correct {
+  border-radius: 0.625rem;
+  border: 1px solid #05966925;
+  overflow: hidden;
+  background: #091410;
+}
+.tiptap-content .mistake-correct-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  background: #05966915;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #34d399;
+}
+.tiptap-content .mistake-mark-correct {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #059669;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+.tiptap-content .mistake-correct-body {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+  color: #a0d0b8;
+  line-height: 1.7;
+}
+.tiptap-content .mistake-correct-body p { margin: 0.25rem 0; }
+
+/* Why block */
+.tiptap-content .mistake-why {
+  margin: 0;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.8rem;
+  color: #9090b0;
+  border-left: 3px solid #6366f140;
+  background: #13131f;
+  border-radius: 0 0.5rem 0.5rem 0;
+  line-height: 1.6;
+}
+.tiptap-content .mistake-why-tag {
+  font-weight: 800;
+  color: #818cf8;
+  margin-right: 0.35rem;
+  font-style: italic;
+}
+
+/* ─── Key Takeaway ─── */
+.tiptap-content .key-takeaway {
+  margin-top: 1.5rem;
+  border: 1px solid #05966930;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #12121f;
+}
+.tiptap-content .key-takeaway-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #101820 0%, #121f1a 100%);
+}
+.tiptap-content .key-takeaway-icon { font-size: 18px; }
+.tiptap-content .key-takeaway-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #34d399;
+}
+.tiptap-content .key-takeaway-body {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #05966920;
+  font-size: 0.85rem;
+  color: #b0c8b8;
+  line-height: 1.7;
+}
+
+/* ── Tables ── */
+.tiptap-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.85rem;
+  overflow: hidden;
+  border: 1px solid #2a2a3e;
+  border-radius: 8px;
+}
+
+.tiptap-content thead {
+  background: #1a1a2e;
+}
+
+.tiptap-content th {
+  padding: 0.625rem 1rem;
+  text-align: left;
+  font-weight: 700;
+  color: #c8c8e0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid #2a2a3e;
+}
+
+.tiptap-content td {
+  padding: 0.5rem 1rem;
+  color: #b0b0c8;
+  border-bottom: 1px solid #1e1e30;
+}
+
+.tiptap-content tbody tr:hover {
+  background: #14142240;
+}
+
+.tiptap-content tbody tr:last-child td {
+  border-bottom: none;
 }

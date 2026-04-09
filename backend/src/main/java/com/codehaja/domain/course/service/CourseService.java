@@ -24,6 +24,7 @@ import com.codehaja.domain.section.dto.CourseSectionDto;
 import com.codehaja.domain.section.entity.CourseSection;
 import com.codehaja.domain.section.mapper.CourseSectionMapper;
 import com.codehaja.domain.section.repository.CourseSectionRepository;
+import com.codehaja.domain.enrollment.repository.CourseEnrollmentRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +37,7 @@ public class CourseService {
     private final CourseSectionRepository courseSectionRepository;
     private final LectureRepository lectureRepository;
     private final LectureItemRepository lectureItemRepository;
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
     private final CourseMapper courseMapper;
     private final CourseSectionMapper courseSectionMapper;
     private final LectureMapper lectureMapper;
@@ -201,6 +203,8 @@ public class CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND, "Course not found."));
 
+        courseEnrollmentRepository.deleteAllByCourseId(courseId);
+        courseSectionRepository.deleteAllByCourseId(courseId);
         courseRepository.delete(course);
     }
 

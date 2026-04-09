@@ -47,6 +47,15 @@ public class CmsAuthController {
         return ResponseEntity.ok(ApiResponse.success((Void) null));
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<CmsAuthDto.MeResponse>> refresh(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        String refreshToken = extractCookie(request, "refresh_token");
+        CmsAuthDto.MeResponse admin = cmsAuthService.refresh(refreshToken, response);
+        return ResponseEntity.ok(ApiResponse.success(admin));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<?>> me(
             @AuthenticationPrincipal UserDetails userDetails) {

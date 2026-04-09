@@ -17,10 +17,10 @@ export const getLatestProjectSubmission = async (itemId) =>
 
 // Coding submission (grade + run)
 // grade: true = Submit for grading (hearts/XP apply), false = Run only
-export const submitCode = async (lectureItemEntryId, { sourceCode, language, grade = false }) => {
+export const submitCode = async (lectureItemEntryId, { sourceCode, language, grade = false, stdin }) => {
   return apiFetch(`/api/coding-submissions/${lectureItemEntryId}`, {
     method: 'POST',
-    body: JSON.stringify({ sourceCode, language, grade }),
+    body: JSON.stringify({ sourceCode, language, grade, stdin }),
   });
 };
 
@@ -101,6 +101,16 @@ export const submitQuizSubmission = async (itemId, payload) =>
       answers: JSON.stringify(payload.answers),
       totalPoints: payload.totalPoints,
       earnedPoints: payload.earnedPoints,
+    }),
+  });
+
+export const saveQuizProgress = async (itemId, payload) =>
+  apiFetch(`/api/quiz-submissions/${itemId}/progress`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      answers: JSON.stringify(payload.answers),
+      totalPoints: payload.totalPoints ?? 0,
+      earnedPoints: payload.earnedPoints ?? 0,
     }),
   });
 

@@ -5,7 +5,7 @@ export default function ContentBox({ className, direction = 'col', children, ...
   return (
     <PageContainer
       className={cn(
-        'rounded-xl border border-slate-200 bg-card p-8 md:p-10 flex',
+        'rounded-xl border border-border bg-card p-8 md:p-10 flex',
         direction === 'row' ? 'flex-row' : 'flex-col',
         className,
       )}

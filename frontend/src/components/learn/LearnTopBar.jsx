@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -40,6 +41,21 @@ export default function LearnTopBar({
   const isProject = itemType === 'PROJECT';
   const isProjectEditor = isProject && submissionType === 'EDITOR';
 
+  // Track heart loss for animation
+  const prevHeartsRef = useRef(hearts);
+  const [lostIndex, setLostIndex] = useState(null);
+
+  useEffect(() => {
+    if (hearts < prevHeartsRef.current) {
+      // The heart at index `hearts` just got lost (0-indexed)
+      setLostIndex(hearts);
+      const timer = setTimeout(() => setLostIndex(null), 600);
+      prevHeartsRef.current = hearts;
+      return () => clearTimeout(timer);
+    }
+    prevHeartsRef.current = hearts;
+  }, [hearts]);
+
   return (
     <div className='h-12 flex items-center justify-between px-4 bg-[#0a0a14] border-b border-[#1e1e2e] shrink-0 z-10'>
       {/* Left: back + icons + hearts */}
@@ -69,10 +85,28 @@ export default function LearnTopBar({
         {/* Hearts */}
         <div className='flex items-center gap-0.5 ml-2 px-2 py-1 rounded-lg bg-[#1e1e2e]' title={`하트 ${hearts}/5`}>
           {[...Array(5)].map((_, i) => (
-            <span key={i} className={`text-sm leading-none ${i < hearts ? 'text-red-400' : 'text-[#3a3a52]'}`}>
+            <span
+              key={i}
+              className={cn(
+                'text-sm leading-none transition-colors duration-300',
+                i < hearts ? 'text-red-400' : 'text-[#3a3a52]',
+                i === lostIndex && 'animate-heart-break'
+              )}
+            >
               ♥
             </span>
           ))}
+          <style jsx>{`
+            @keyframes heart-break {
+              0% { transform: scale(1); opacity: 1; color: #f87171; }
+              30% { transform: scale(1.4); opacity: 1; color: #f87171; }
+              60% { transform: scale(0.6); opacity: 0.5; }
+              100% { transform: scale(1); opacity: 1; color: #3a3a52; }
+            }
+            .animate-heart-break {
+              animation: heart-break 0.6s ease-out forwards;
+            }
+          `}</style>
         </div>
       </div>
 
@@ -143,26 +177,26 @@ export default function LearnTopBar({
         {/* PROJECT REPO: submit handled inside right panel — show nothing here */}
       </div>
 
-      {/* Right: Prev / Next + Complete */}
-      <div className='flex items-center gap-2'>
+      {/* Right: Prev / Progress / Next + Complete */}
+      <div className='flex items-center gap-2 flex-1 max-w-xl ml-4'>
         {prevLecture ? (
           <Link
             href={prevLecture.href}
-            className='flex items-center gap-1 px-2 py-1.5 rounded-md text-xs text-[#9090a8] hover:text-white hover:bg-[#1e1e2e] transition-colors'
+            className='flex items-center gap-1 px-2 py-1.5 rounded-md text-xs text-[#9090a8] hover:text-white hover:bg-[#1e1e2e] transition-colors shrink-0'
           >
             <ChevronLeft size={14} />
-            Previous
+            Prev
           </Link>
         ) : (
-          <span className='flex items-center gap-1 px-2 py-1.5 text-xs text-[#3a3a52] cursor-not-allowed'>
+          <span className='flex items-center gap-1 px-2 py-1.5 text-xs text-[#3a3a52] cursor-not-allowed shrink-0'>
             <ChevronLeft size={14} />
-            Previous
+            Prev
           </span>
         )}
 
-        <div className='w-28 h-1.5 bg-[#1e1e2e] rounded-full overflow-hidden'>
+        <div className='flex-1 h-1.5 bg-[#1e1e2e] rounded-full overflow-hidden'>
           <div
-            className='h-full bg-violet-600 rounded-full transition-all duration-300'
+            className='h-full bg-violet-600 rounded-full transition-all duration-500'
             style={{ width: `${Math.round(progress * 100)}%` }}
           />
         </div>
@@ -170,13 +204,13 @@ export default function LearnTopBar({
         {nextLecture ? (
           <Link
             href={nextLecture.href}
-            className='flex items-center gap-1 px-2 py-1.5 rounded-md text-xs text-[#9090a8] hover:text-white hover:bg-[#1e1e2e] transition-colors'
+            className='flex items-center gap-1 px-2 py-1.5 rounded-md text-xs text-[#9090a8] hover:text-white hover:bg-[#1e1e2e] transition-colors shrink-0'
           >
             Next
             <ChevronRight size={14} />
           </Link>
         ) : (
-          <span className='flex items-center gap-1 px-2 py-1.5 text-xs text-[#3a3a52] cursor-not-allowed'>
+          <span className='flex items-center gap-1 px-2 py-1.5 text-xs text-[#3a3a52] cursor-not-allowed shrink-0'>
             Next
             <ChevronRight size={14} />
           </span>
@@ -185,7 +219,7 @@ export default function LearnTopBar({
         <button
           onClick={onComplete}
           className={cn(
-            'ml-2 px-3 py-1.5 rounded-md text-xs font-semibold border transition-all',
+            'ml-2 px-3 py-1.5 rounded-md text-xs font-semibold border transition-all shrink-0',
             isCompleted
               ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-400'
               : 'border-[#2a2a3e] text-[#9090a8] hover:border-violet-500/40 hover:text-violet-300'

@@ -12,17 +12,20 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
+    private final SecurityErrorHandler securityErrorHandler;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          CorsConfigurationSource corsConfigurationSource) {
+                          CorsConfigurationSource corsConfigurationSource,
+                          SecurityErrorHandler securityErrorHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.corsConfigurationSource = corsConfigurationSource;
+        this.securityErrorHandler = securityErrorHandler;
     }
 
     @Bean
@@ -45,7 +48,8 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/api/cms/auth/login",
-                                "/api/cms/auth/logout"
+                                "/api/cms/auth/logout",
+                                "/api/cms/auth/refresh"
                         ).permitAll()
                         // Public read-only access
                         .requestMatchers(HttpMethod.GET, "/api/courses/**").permitAll()
@@ -77,14 +81,21 @@ public class SecurityConfig {
                         .requestMatchers("/api/anonymous-users/**").permitAll()
                         .requestMatchers("/api/coding-submissions/**").authenticated()
                         .requestMatchers("/api/project-submissions/**").authenticated()
+                        .requestMatchers("/api/checkpoint-submissions/**").authenticated()
                         .requestMatchers("/api/quiz-submissions/**").authenticated()
+                        .requestMatchers("/api/hearts/**").authenticated()
+                        .requestMatchers("/api/cms/files/**").hasRole("ADMIN")
                         .requestMatchers("/api/cms/dashboard/**").hasRole("ADMIN")
                         .requestMatchers("/api/cms/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/cms/admins/**").hasRole("ADMIN")
                         .requestMatchers("/api/cms/subscriptions/**").hasRole("ADMIN")
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
                         .anyRequest().permitAll()
                 )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(securityErrorHandler)
+                        .authenticationEntryPoint(securityErrorHandler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

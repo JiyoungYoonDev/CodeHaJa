@@ -51,7 +51,12 @@ public enum ErrorCode {
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_TOKEN", "Invalid or expired token."),
     AUTH_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_401_UNAUTH", "Authentication required."),
     AUTH_ACCOUNT_BANNED(HttpStatus.FORBIDDEN, "AUTH_403", "Account is banned."),
-    AUTH_ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, "AUTH_403_LOCKED", "Account is temporarily locked.");
+    AUTH_ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, "AUTH_403_LOCKED", "Account is temporarily locked."),
+
+    // AI Generation
+    AI_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "AI_500", "AI content generation failed."),
+    AI_INVALID_OUTPUT(HttpStatus.valueOf(422), "AI_422", "AI output failed validation."),
+    AI_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "AI_503", "AI service is not configured.");
 
 
     private final HttpStatus status;

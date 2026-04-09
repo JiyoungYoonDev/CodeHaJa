@@ -18,6 +18,7 @@ public class QuizSubmissionDto {
     }
 
     @Getter
+    @Setter
     @Builder
     public static class Response {
         private Long id;
@@ -27,5 +28,7 @@ public class QuizSubmissionDto {
         private int totalPoints;
         private int earnedPoints;
         private LocalDateTime createdAt;
+        private Integer currentHearts;
+        private LocalDateTime heartsRefillAt;
     }
 }

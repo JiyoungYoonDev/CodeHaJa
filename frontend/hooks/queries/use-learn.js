@@ -19,6 +19,7 @@ import {
   submitProjectSubmission,
   getLatestProjectSubmission,
   submitQuizSubmission,
+  saveQuizProgress,
   getLatestQuizSubmission,
 } from '../../services/learn-service';
 import { queryKeys } from '@/lib/query-keys';
@@ -198,6 +199,12 @@ export function useLatestProjectSubmissionQuery(itemId, options = {}) {
 export function useSubmitQuizMutation() {
   return useMutation({
     mutationFn: ({ itemId, payload }) => submitQuizSubmission(itemId, payload),
+  });
+}
+
+export function useSaveQuizProgressMutation() {
+  return useMutation({
+    mutationFn: ({ itemId, payload }) => saveQuizProgress(itemId, payload),
   });
 }
 

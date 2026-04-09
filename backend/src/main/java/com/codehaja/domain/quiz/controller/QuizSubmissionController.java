@@ -27,6 +27,17 @@ public class QuizSubmissionController {
         return ResponseEntity.ok(ApiResponse.ok("Quiz submitted successfully.", response));
     }
 
+    @PutMapping("/{lectureItemId}/progress")
+    public ResponseEntity<ApiResponse<QuizSubmissionDto.Response>> saveProgress(
+            @PathVariable Long lectureItemId,
+            @RequestBody QuizSubmissionDto.CreateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        QuizSubmissionDto.Response response =
+                quizSubmissionService.saveProgress(lectureItemId, request, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok("Quiz progress saved.", response));
+    }
+
     @GetMapping("/item/{lectureItemId}/latest")
     public ResponseEntity<ApiResponse<QuizSubmissionDto.Response>> getLatest(
             @PathVariable Long lectureItemId,

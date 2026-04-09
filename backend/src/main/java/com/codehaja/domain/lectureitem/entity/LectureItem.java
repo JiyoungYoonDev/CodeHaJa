@@ -52,6 +52,9 @@ public class LectureItem extends BaseTimeEntity {
     @Column(name = "is_required", nullable = false)
     private Boolean isRequired;
 
+    @Column(name = "external_links", columnDefinition = "TEXT")
+    private String externalLinks;
+
     @OneToMany(mappedBy = "lectureItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LectureItemEntry> entries = new ArrayList<>();
 }

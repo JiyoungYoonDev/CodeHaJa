@@ -10,5 +10,7 @@ public interface QuizSubmissionRepository extends JpaRepository<QuizSubmission, 
     Optional<QuizSubmission> findTopByLectureItemIdAndUserEmailOrderByCreatedAtDesc(
             Long lectureItemId, String email);
 
+    Optional<QuizSubmission> findByLectureItemIdAndUserId(Long lectureItemId, Long userId);
+
     boolean existsByLectureItemIdAndUserEmail(Long lectureItemId, String email);
 }

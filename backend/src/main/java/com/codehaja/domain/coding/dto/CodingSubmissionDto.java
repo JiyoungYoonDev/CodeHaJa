@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class CodingSubmissionDto {
 
@@ -15,6 +16,8 @@ public class CodingSubmissionDto {
         private String language;
         /** true = Grade (hearts/XP apply), false = Run only */
         private boolean grade = false;
+        /** Optional stdin for Run mode */
+        private String stdin;
     }
 
     @Getter
@@ -32,9 +35,21 @@ public class CodingSubmissionDto {
         private String stderr;
         @JsonRawValue
         private String resultJson;
+        private List<TestCaseResult> testCaseResults;
         // Gamification
         private int xpGained = 0;
         private int currentHearts = 5;
         private LocalDateTime heartsRefillAt;
+    }
+
+    @Getter
+    @Setter
+    public static class TestCaseResult {
+        private int index;
+        private String input;
+        private String expectedOutput;
+        private String actualOutput;
+        private boolean passed;
+        private String status; // PASSED, FAILED, ERROR
     }
 }

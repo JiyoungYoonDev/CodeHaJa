@@ -1,6 +1,7 @@
 package com.codehaja.domain.lectureitem.repository;
 
 import com.codehaja.domain.lectureitem.entity.LectureItem;
+import com.codehaja.domain.lectureitem.entity.LectureItemType;
 import com.codehaja.domain.lectureitem.entity.ReviewStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,4 +50,13 @@ public interface LectureItemRepository extends JpaRepository<LectureItem, Long>,
         WHERE li.lecture.id = :lectureId
     """)
     Integer findMaxSortOrderByLectureId(Long lectureId);
+
+    @Query("""
+        SELECT li FROM LectureItem li
+        JOIN li.lecture l
+        JOIN l.courseSection cs
+        WHERE cs.course.id = :courseId
+          AND li.itemType = :itemType
+    """)
+    List<LectureItem> findByCourseIdAndItemType(Long courseId, LectureItemType itemType);
 }

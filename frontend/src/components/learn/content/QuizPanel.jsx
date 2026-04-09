@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState, useCallback } from 'react';
+import { ChevronRight, Check, RotateCcw } from 'lucide-react';
 import katex from 'katex';
 import MathKeyboard from './MathKeyboard';
 import GraphDisplay from './GraphDisplay';
@@ -8,14 +9,29 @@ import { tiptapToHtml, applyMathToHtml } from '@/lib/tiptap-renderer';
 
 // ─── KaTeX ─────────────────────────────────────────────────────────────────────
 
+function fixLatexEscapes(expr) {
+  return expr
+    .replace(/\t/g, '\\t')
+    .replace(/\x08/g, '\\b')
+    .replace(/\f/g, '\\f')
+    .replace(/\r/g, '\\r')
+    // \n inside math is always corrupted LaTeX (\neq, \nu, etc.)
+    .replace(/\n/g, '\\n');
+}
+
 function renderMath(text) {
   if (!text) return '';
-  let result = text.replace(/\$\$([^$]+)\$\$/g, (_, expr) => {
-    try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
+  // Restore \n-prefixed LaTeX commands BEFORE converting newlines to <br>
+  // e.g. corrupted \neq (newline + eq) → \neq, \nu (newline + u) → \nu
+  let result = text.replace(/\n(eq|abla|eg|u|ot(?:in)?|i|less|geq|leq|mid)(?![a-zA-Z])/g, '\\n$1');
+  // Convert remaining newlines to <br> for multi-step explanations
+  result = result.replace(/\n/g, '<br>');
+  result = result.replace(/\$\$([^$]+)\$\$/g, (_, expr) => {
+    try { return katex.renderToString(fixLatexEscapes(expr).trim(), { displayMode: true, throwOnError: false }); }
     catch { return `<span class="text-rose-400">${expr}</span>`; }
   });
   result = result.replace(/\$([^$\n]+)\$/g, (_, expr) => {
-    try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
+    try { return katex.renderToString(fixLatexEscapes(expr).trim(), { displayMode: false, throwOnError: false }); }
     catch { return `<span class="text-rose-400">${expr}</span>`; }
   });
   return result;
@@ -80,11 +96,12 @@ function reducer(state, action) {
     case 'SHOW_HINT':    return { ...state, [id]: { ...q, hintIndex: Math.min((q.hintIndex ?? 0) + 1, action.total) } };
     case 'SHOW_EXPL':    return { ...state, [id]: { ...q, showExplanation: true } };
     case 'TOGGLE_KB':    return { ...state, [id]: { ...q, showKeyboard: !(q.showKeyboard) } };
+    case 'RESTORE':      return action.state;
     default: return state;
   }
 }
 
-const LETTERS = ['①', '②', '③', '④', '⑤', '⑥'];
+const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 // ─── Text block renderer ───────────────────────────────────────────────────────
 
@@ -111,7 +128,7 @@ function TextBlock({ block }) {
 
 // ─── Quiz block renderer ───────────────────────────────────────────────────────
 
-function QuizBlock({ block, quizIndex, qState, dispatch, showSolution }) {
+function QuizBlock({ block, quizIndex, qState, dispatch, showSolution, onWrongAnswer }) {
   const { selected, input, submitted, correct, hintIndex, showExplanation, showKeyboard } = qState;
   const hints = block.hints ?? [];
   const visibleHints = hints.slice(0, hintIndex);
@@ -135,6 +152,9 @@ function QuizBlock({ block, quizIndex, qState, dispatch, showSolution }) {
       isCorrect = input.trim().toLowerCase() === (block.correctAnswer ?? '').trim().toLowerCase();
     }
     dispatch({ type: 'SUBMIT', id: block.id, correct: isCorrect });
+    if (!isCorrect && onWrongAnswer) {
+      onWrongAnswer();
+    }
   }
 
   return (
@@ -174,7 +194,7 @@ function QuizBlock({ block, quizIndex, qState, dispatch, showSolution }) {
             }
             return (
               <button
-                key={opt.id}
+                key={`${block.id}-${opt.id}-${i}`}
                 type='button'
                 disabled={submitted || showSolution}
                 onClick={() => dispatch({ type: 'SELECT', id: block.id, value: opt.id })}
@@ -323,17 +343,159 @@ function QuizBlock({ block, quizIndex, qState, dispatch, showSolution }) {
   );
 }
 
+// ─── Build steps (group text blocks + quiz into steps) ────────────────────────
+
+function buildQuizSteps(blocks) {
+  const steps = [];
+  let pendingTexts = [];
+
+  for (const block of blocks) {
+    if (block.type === 'text') {
+      if (steps.length > 0) {
+        steps[steps.length - 1].afterTexts.push(block);
+      } else {
+        pendingTexts.push(block);
+      }
+    } else if (block.type === 'quiz') {
+      steps.push({ texts: pendingTexts, quiz: block, afterTexts: [] });
+      pendingTexts = [];
+    }
+  }
+  const trailingTexts = steps.length > 0
+    ? steps[steps.length - 1].afterTexts.splice(0)
+    : pendingTexts;
+  return { steps, trailingTexts };
+}
+
 // ─── QuizPanel root ────────────────────────────────────────────────────────────
 
-export default function QuizPanel({ contentJson, onComplete, isCompleted }) {
+export default function QuizPanel({ contentJson, onComplete, isCompleted, previousSubmission, itemId, onSaveProgress, onWrongAnswer }) {
   const blocks = toBlocks(contentJson);
   const quizBlocks = blocks.filter((b) => b.type === 'quiz');
+  const { steps, trailingTexts } = buildQuizSteps(blocks);
+  const totalSteps = steps.length;
+  const storageKey = itemId ? `codehaja_quiz_${itemId}` : null;
 
   const [state, dispatch] = useReducer(reducer, quizBlocks, initState);
   const [showSolutions, setShowSolutions] = useState(false);
+  const [restored, setRestored] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [solvedSteps, setSolvedSteps] = useState(new Set());
+  const [reviewMode, setReviewMode] = useState(false);
+
+  // Priority 1: Restore from DB submission
+  // Priority 2: Restore from localStorage (fallback)
+  useEffect(() => {
+    if (previousSubmission?.answers) {
+      const answers = typeof previousSubmission.answers === 'string'
+        ? JSON.parse(previousSubmission.answers)
+        : previousSubmission.answers;
+      if (Array.isArray(answers) && answers.length > 0) {
+        const restoredState = {};
+        const solved = new Set();
+        for (const q of quizBlocks) {
+          const prev = answers.find((a) => a.blockId === q.id);
+          if (prev) {
+            const isMC = q.quizType === 'MULTIPLE_CHOICE';
+            restoredState[q.id] = {
+              selected: isMC ? prev.answer : null,
+              input: !isMC ? (prev.answer ?? '') : '',
+              submitted: true,
+              correct: prev.isCorrect ?? false,
+              hintIndex: 0,
+              showExplanation: false,
+              showKeyboard: false,
+            };
+          } else {
+            restoredState[q.id] = { selected: null, input: '', submitted: false, correct: false, hintIndex: 0, showExplanation: false, showKeyboard: false };
+          }
+        }
+        dispatch({ type: 'RESTORE', state: restoredState });
+        // Determine which steps are already solved
+        steps.forEach((step, i) => {
+          const prev = answers.find((a) => a.blockId === step.quiz.id);
+          if (prev?.isCorrect) solved.add(i);
+        });
+        setSolvedSteps(solved);
+        const firstUnsolved = steps.findIndex((_, i) => !solved.has(i));
+        if (firstUnsolved >= 0) {
+          setCurrentStep(firstUnsolved);
+        } else if (solved.size === totalSteps) {
+          setCurrentStep(totalSteps - 1);
+          setReviewMode(true);
+        }
+        setRestored(true);
+        return;
+      }
+    }
+    // Fallback: restore partial progress from localStorage
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+            dispatch({ type: 'RESTORE', state: parsed });
+            // Restore solved steps from localStorage state
+            const solved = new Set();
+            steps.forEach((step, i) => {
+              if (parsed[step.quiz.id]?.correct) solved.add(i);
+            });
+            setSolvedSteps(solved);
+            const firstUnsolved = steps.findIndex((_, i) => !solved.has(i));
+            if (firstUnsolved >= 0) {
+              setCurrentStep(firstUnsolved);
+            } else if (solved.size === totalSteps && totalSteps > 0) {
+              setCurrentStep(totalSteps - 1);
+              setReviewMode(true);
+            }
+          }
+        }
+      } catch {}
+    }
+    setRestored(true);
+  }, [previousSubmission, itemId]);
+
+  // Persist quiz state to localStorage on every change (after initial restore)
+  useEffect(() => {
+    if (!restored || !storageKey) return;
+    try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch {}
+  }, [state, restored, storageKey]);
+
+  // Save partial progress to DB after each answer submission (debounced)
+  useEffect(() => {
+    if (!restored || !onSaveProgress) return;
+    const hasAnySubmitted = Object.values(state).some((q) => q.submitted);
+    if (!hasAnySubmitted) return;
+    const t = setTimeout(() => {
+      const answers = quizBlocks.map((q) => ({
+        blockId: q.id,
+        quizType: q.quizType,
+        answer: state[q.id]?.input || state[q.id]?.selected || null,
+        isCorrect: state[q.id]?.correct ?? false,
+        points: q.points ?? 0,
+      }));
+      const totalPoints = quizBlocks.reduce((sum, q) => sum + (q.points ?? 0), 0);
+      const earnedPoints = quizBlocks.reduce((sum, q) => sum + (state[q.id]?.correct ? (q.points ?? 0) : 0), 0);
+      onSaveProgress({ answers, totalPoints, earnedPoints }).catch(() => {});
+    }, 500);
+    return () => clearTimeout(t);
+  }, [state, restored, onSaveProgress]);
 
   const correctIds = new Set(Object.entries(state).filter(([, q]) => q.correct).map(([id]) => id));
   const allCorrect = quizBlocks.length > 0 && quizBlocks.every((q) => correctIds.has(q.id));
+
+  // Track when a quiz is answered correctly → mark step solved
+  const handleQuizCorrect = useCallback((stepIdx) => {
+    setSolvedSteps((prev) => {
+      const next = new Set(prev);
+      next.add(stepIdx);
+      if (next.size === totalSteps) {
+        setTimeout(() => setReviewMode(true), 600);
+      }
+      return next;
+    });
+  }, [totalSteps]);
 
   useEffect(() => {
     if (allCorrect && !isCompleted && onComplete) {
@@ -350,37 +512,170 @@ export default function QuizPanel({ contentJson, onComplete, isCompleted }) {
     }
   }, [allCorrect]);
 
+  // Watch reducer state for correct submissions → sync solvedSteps
+  useEffect(() => {
+    if (!restored) return;
+    steps.forEach((step, i) => {
+      if (state[step.quiz.id]?.correct && !solvedSteps.has(i)) {
+        handleQuizCorrect(i);
+      }
+    });
+  }, [state, restored]);
+
+  function goNext() {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  }
+
+  function goToStep(idx) {
+    if (solvedSteps.has(idx) || idx <= currentStep) {
+      setCurrentStep(idx);
+    }
+  }
+
+  function handleResetAll() {
+    dispatch({ type: 'RESTORE', state: initState(quizBlocks) });
+    setSolvedSteps(new Set());
+    setCurrentStep(0);
+    setReviewMode(false);
+    setShowSolutions(false);
+    if (storageKey) {
+      try { localStorage.removeItem(storageKey); } catch {}
+    }
+  }
+
   if (blocks.length === 0) {
     return <p className='text-sm text-[#5a5a72]'>콘텐츠 데이터가 없습니다.</p>;
   }
 
-  // Count quiz blocks seen so far (for "Problem N" numbering)
-  let quizCounter = -1;
+  if (totalSteps === 0) {
+    return <p className='text-sm text-[#5a5a72]'>퀴즈 문제가 없습니다.</p>;
+  }
 
-  return (
-    <div className='space-y-6'>
-      {blocks.map((block) => {
-        if (block.type === 'text') {
-          return <TextBlock key={block.id} block={block} />;
-        }
+  // ── Review mode: all solved → show all questions ──
+  if (reviewMode) {
+    return (
+      <div className='mt-6 space-y-5'>
+        <div className='flex items-center justify-between gap-4'>
+          <div className='flex items-center gap-2'>
+            <Check size={16} className='text-emerald-400' />
+            <span className='text-sm font-bold text-white'>All Complete!</span>
+            <span className='text-xs text-[#6a6a82]'>— {totalSteps} problems</span>
+          </div>
+          <button
+            onClick={handleResetAll}
+            className='flex items-center gap-1.5 text-xs text-[#6a6a82] hover:text-violet-400 transition-colors'
+          >
+            <RotateCcw size={12} />
+            다시 풀기
+          </button>
+        </div>
 
-        quizCounter++;
-        const thisIndex = quizCounter;
-
-        return (
-          <div key={block.id}>
+        {steps.map((step, i) => (
+          <div key={`review-${i}`} className='space-y-4'>
+            {step.texts.map((tb) => <TextBlock key={tb.id} block={tb} />)}
             <QuizBlock
-              block={block}
-              quizIndex={thisIndex}
-              qState={state[block.id] ?? { selected: null, input: '', submitted: false, correct: false, hintIndex: 0, showExplanation: false, showKeyboard: false }}
+              block={step.quiz}
+              quizIndex={i}
+              qState={state[step.quiz.id] ?? { selected: null, input: '', submitted: false, correct: false, hintIndex: 0, showExplanation: false, showKeyboard: false }}
               dispatch={dispatch}
               showSolution={showSolutions}
+              onWrongAnswer={onWrongAnswer}
             />
+            {step.afterTexts.map((tb) => <TextBlock key={tb.id} block={tb} />)}
           </div>
-        );
-      })}
+        ))}
 
-      {/* Show solution toggle */}
+        {trailingTexts.map((tb) => <TextBlock key={tb.id} block={tb} />)}
+
+        {quizBlocks.length > 0 && (
+          <div className='pt-2 border-t border-[#2a2a3e]'>
+            <button
+              type='button'
+              onClick={() => setShowSolutions((v) => !v)}
+              className='text-sm text-[#4a8fff] hover:text-[#6aafff] transition-colors flex items-center gap-1'
+            >
+              {showSolutions ? '해설 숨기기' : '해설 보기'}
+              <span className='text-xs ml-1'>{showSolutions ? '∧' : '∨'}</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Active mode: step-by-step ──
+  const step = steps[currentStep];
+
+  return (
+    <div className='mt-6 space-y-5'>
+      {/* Header + Progress */}
+      <div className='flex items-center justify-between gap-4'>
+        <div className='flex items-center gap-2'>
+          <span className='text-base'>📝</span>
+          <span className='text-sm font-bold text-white'>Quiz</span>
+        </div>
+        <span className='text-xs text-[#6a6a82] font-medium'>
+          Problem <span className='text-white font-bold'>{currentStep + 1}</span> / {totalSteps}
+        </span>
+      </div>
+
+      {/* Progress dots */}
+      <div className='flex items-center gap-1.5'>
+        {steps.map((_, i) => {
+          const isSolved = solvedSteps.has(i);
+          const isCurrent = i === currentStep;
+          return (
+            <button
+              key={i}
+              onClick={() => goToStep(i)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                isCurrent
+                  ? 'w-6 bg-violet-500'
+                  : isSolved
+                    ? 'w-2 bg-emerald-500 hover:bg-emerald-400 cursor-pointer'
+                    : 'w-2 bg-[#2a2a3e]'
+              }`}
+              title={isSolved ? `Problem ${i + 1} ✓` : `Problem ${i + 1}`}
+            />
+          );
+        })}
+      </div>
+
+      {/* Context text blocks */}
+      {step.texts.map((tb) => <TextBlock key={tb.id} block={tb} />)}
+
+      {/* Current quiz */}
+      <QuizBlock
+        key={`quiz-${currentStep}`}
+        block={step.quiz}
+        quizIndex={currentStep}
+        qState={state[step.quiz.id] ?? { selected: null, input: '', submitted: false, correct: false, hintIndex: 0, showExplanation: false, showKeyboard: false }}
+        dispatch={dispatch}
+        showSolution={showSolutions}
+        onWrongAnswer={onWrongAnswer}
+      />
+
+      {/* After-texts (solution walkthrough, shown after solving) */}
+      {solvedSteps.has(currentStep) && step.afterTexts.map((tb) => <TextBlock key={tb.id} block={tb} />)}
+
+      {/* Next button */}
+      {solvedSteps.has(currentStep) && currentStep < totalSteps - 1 && (
+        <div className='flex justify-center'>
+          <button
+            onClick={goNext}
+            className='flex items-center gap-2 px-6 py-2.5 rounded-xl
+                       bg-violet-600 hover:bg-violet-500
+                       text-white text-sm font-semibold transition-colors'
+          >
+            Next Problem
+            <ChevronRight size={15} />
+          </button>
+        </div>
+      )}
+
+      {/* Show solution link */}
       {quizBlocks.length > 0 && (
         <div className='pt-2 border-t border-[#2a2a3e]'>
           <button

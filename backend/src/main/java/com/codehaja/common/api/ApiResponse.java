@@ -7,6 +7,7 @@ import lombok.Getter;
 @Builder
 public class ApiResponse<T> {
     private boolean success;
+    private String code;
     private String message;
     private T data;
     private Object metadata;
@@ -38,6 +39,15 @@ public class ApiResponse<T> {
     public static ApiResponse<Void> error(String message) {
         return ApiResponse.<Void>builder()
                 .success(false)
+                .message(message)
+                .data(null)
+                .build();
+    }
+
+    public static ApiResponse<Void> error(String code, String message) {
+        return ApiResponse.<Void>builder()
+                .success(false)
+                .code(code)
                 .message(message)
                 .data(null)
                 .build();

@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import LearnLayout from '@/components/learn/LearnLayout';
@@ -24,11 +24,15 @@ import {
   useSubmitProjectMutation,
   useLatestProjectSubmissionQuery,
   useSubmitQuizMutation,
+  useSaveQuizProgressMutation,
   useLatestQuizSubmissionQuery,
 } from '../../../../../../hooks/queries/use-learn';
+import { useCourseDetailQuery } from '../../../../../../hooks/queries/use-course';
 import { useAuth } from '@/lib/auth-context';
+import { apiFetch } from '@/lib/api-client';
 import CorrectModal from '@/components/learn/CorrectModal';
 import XpGainToast from '@/components/learn/XpGainToast';
+import HeartLostToast from '@/components/learn/HeartLostToast';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -46,14 +50,41 @@ function buildDefaultFilesContent(problemFiles) {
 }
 
 const FILES_KEY = (itemId, problemIndex) => `codehaja_files_${itemId}_p${problemIndex}`;
+const STARTER_KEY = (itemId, problemIndex) => `codehaja_starter_${itemId}_p${problemIndex}`;
 
-function loadFilesFromStorage(itemId, problemIndex) {
+/**
+ * Returns { files, contentChanged }.
+ * - files: saved draft object or null
+ * - contentChanged: true if starter code was regenerated (old draft discarded)
+ */
+function loadFilesFromStorage(itemId, problemIndex, currentStarter) {
   try {
+    const savedStarter = localStorage.getItem(STARTER_KEY(itemId, problemIndex));
     const raw = localStorage.getItem(FILES_KEY(itemId, problemIndex));
-    return raw ? JSON.parse(raw) : null;
+
+    if (currentStarter && raw) {
+      if (!savedStarter) {
+        // No starter key saved yet — discard stale draft from before this feature
+        localStorage.removeItem(FILES_KEY(itemId, problemIndex));
+        return { files: null, contentChanged: true };
+      }
+      if (savedStarter !== currentStarter) {
+        // Starter code changed → content was regenerated, discard draft
+        localStorage.removeItem(FILES_KEY(itemId, problemIndex));
+        localStorage.removeItem(STARTER_KEY(itemId, problemIndex));
+        return { files: null, contentChanged: true };
+      }
+    }
+    return { files: raw ? JSON.parse(raw) : null, contentChanged: false };
   } catch {
-    return null;
+    return { files: null, contentChanged: false };
   }
+}
+
+function saveStarterCode(itemId, problemIndex, starterCode) {
+  try {
+    if (starterCode) localStorage.setItem(STARTER_KEY(itemId, problemIndex), starterCode);
+  } catch { /* ignore */ }
 }
 
 // ─── main page ────────────────────────────────────────────────────────────────
@@ -103,7 +134,9 @@ function LearnPageInner() {
   const [visitedLectureIds, setVisitedLectureIds] = useState(new Set());
   const [passedItemIds, setPassedItemIds] = useState(new Set());
   const [problemIndex, setProblemIndex] = useState(0);
+  const [contentRegenerated, setContentRegenerated] = useState(false);
   const [hearts, setHearts] = useState(5);
+  const [showHeartLost, setShowHeartLost] = useState(false);
   const [xpToastKey, setXpToastKey] = useState(0);
   const [xpToastAmount, setXpToastAmount] = useState(0);
   const [showHeartEmptyModal, setShowHeartEmptyModal] = useState(false);
@@ -144,7 +177,6 @@ function LearnPageInner() {
   const completedItemIds = new Set(completedItemIdsResponse?.data ?? []);
 
   const isCodingItem = item?.itemType === 'CODING_SET';
-  console.log('[learn] item?.itemType:', item?.itemType, 'isCodingItem:', isCodingItem);
   const isQuizItem = item?.itemType === 'QUIZ_SET';
   const isProjectItem = item?.itemType === 'PROJECT';
   const projectSubmissionType = isProjectItem ? (item?.contentJson?.submissionType ?? 'EDITOR') : null;
@@ -169,31 +201,44 @@ function LearnPageInner() {
 
   const { data: lectureItemsResponse } = useLectureItemsQuery(item?.lectureId);
   const lectureItems = lectureItemsResponse?.data?.content ?? [];
-  const lectures = sectionLecturesResponse?.data?.content ?? [];
+
+  // Load full course structure for cross-section navigation
+  const { data: courseResponse } = useCourseDetailQuery(courseId);
+  const allSections = courseResponse?.data?.sections ?? [];
+  // Flat list of all lectures across all sections, preserving sectionId
+  const allLectures = allSections.flatMap((s) =>
+    (s.lectures ?? []).map((l) => ({ ...l, sectionId: s.id }))
+  );
 
   const currentItemIndex = lectureItems.findIndex((i) => i.id === itemId);
-  const currentLectureIndex = lectures.findIndex((l) => l.id === item?.lectureId);
+  const globalLectureIndex = allLectures.findIndex((l) => l.id === item?.lectureId);
 
+  // Prev: previous item in same lecture, or previous lecture's firstItemId (cross-section)
+  const prevLectureEntry = globalLectureIndex > 0 ? allLectures[globalLectureIndex - 1] : null;
   const prevItemId =
     currentItemIndex > 0
       ? lectureItems[currentItemIndex - 1].id
-      : lectures[currentLectureIndex - 1]?.firstItemId ?? null;
+      : prevLectureEntry?.firstItemId ?? null;
+  const prevSectionId = currentItemIndex > 0 ? sectionId : prevLectureEntry?.sectionId ?? sectionId;
 
+  // Next: next item in same lecture, or next lecture's firstItemId (cross-section)
+  const nextLectureEntry = globalLectureIndex !== -1 && globalLectureIndex < allLectures.length - 1
+    ? allLectures[globalLectureIndex + 1] : null;
   const nextItemId =
     currentItemIndex !== -1 && currentItemIndex < lectureItems.length - 1
       ? lectureItems[currentItemIndex + 1].id
-      : lectures[currentLectureIndex + 1]?.firstItemId ?? null;
+      : nextLectureEntry?.firstItemId ?? null;
+  const nextSectionId =
+    currentItemIndex !== -1 && currentItemIndex < lectureItems.length - 1
+      ? sectionId : nextLectureEntry?.sectionId ?? sectionId;
 
-  const base = `/learn/${courseId}/${sectionId}`;
-  const prevNav = prevItemId ? { href: `${base}?itemId=${prevItemId}` } : null;
-  const nextNav = nextItemId ? { href: `${base}?itemId=${nextItemId}` } : null;
+  const prevNav = prevItemId ? { href: `/learn/${courseId}/${prevSectionId}?itemId=${prevItemId}` } : null;
+  const nextNav = nextItemId ? { href: `/learn/${courseId}/${nextSectionId}?itemId=${nextItemId}` } : null;
 
-  // Progress: (completed lectures + fraction of current lecture) / total lectures
+  // Progress within current lecture (item-level)
   const progress =
-    lectures.length > 0 && currentLectureIndex !== -1
-      ? (currentLectureIndex +
-          (lectureItems.length > 0 ? (currentItemIndex + 1) / lectureItems.length : 0)) /
-        lectures.length
+    lectureItems.length > 0 && currentItemIndex !== -1
+      ? (currentItemIndex + 1) / lectureItems.length
       : 0;
 
   const { mutateAsync: submitCode } = useSubmitCodeMutation();
@@ -201,6 +246,40 @@ function LearnPageInner() {
   const { mutateAsync: saveItemProgress } = useSaveItemProgressMutation();
   const { mutateAsync: submitProject } = useSubmitProjectMutation();
   const { mutateAsync: submitQuiz } = useSubmitQuizMutation();
+  const { mutateAsync: saveQuizProgress } = useSaveQuizProgressMutation();
+
+  const handleSaveQuizProgress = useCallback(
+    (payload) => isQuizItem ? saveQuizProgress({ itemId, payload }) : Promise.resolve(),
+    [isQuizItem, itemId, saveQuizProgress]
+  );
+
+  // Reusable heart handler — called by quiz/checkpoint on wrong answer
+  // onWrongAnswer()          → calls /api/hearts/deduct (quiz: client-side check)
+  // onWrongAnswer(number)    → syncs hearts from server response (checkpoint: server deducted)
+  // onWrongAnswer('empty')   → shows heart empty modal (checkpoint: 422 from server)
+  const handleHeartDeduction = useCallback(async (heartsOrSignal) => {
+    if (typeof heartsOrSignal === 'number') {
+      setHearts(heartsOrSignal);
+      setShowHeartLost(true);
+      return;
+    }
+    if (heartsOrSignal === 'empty') {
+      setShowHeartEmptyModal(true);
+      return;
+    }
+    try {
+      const res = await apiFetch('/api/hearts/deduct', { method: 'POST' });
+      const data = res?.data ?? res;
+      if (data?.currentHearts != null) {
+        setHearts(data.currentHearts);
+        setShowHeartLost(true);
+      }
+    } catch (e) {
+      if (e?.status === 422) {
+        setShowHeartEmptyModal(true);
+      }
+    }
+  }, []);
 
   const { data: latestProjectSubmissionResponse } = useLatestProjectSubmissionQuery(itemId, {
     enabled: !!itemId && !!user && isProjectItem,
@@ -216,6 +295,7 @@ function LearnPageInner() {
     setShowCorrectModal(false);
     setRunResult(null);
     setIsCompleted(false);
+    setContentRegenerated(false);
     setProblemIndex(0);
   }, [itemId]);
 
@@ -224,19 +304,23 @@ function LearnPageInner() {
     if (!itemId || !needsEditor) return;
     setRunResult(null);
 
-    const saved = loadFilesFromStorage(itemId, problemIndex);
+    // Current starter code — used to detect content regeneration
+    const currentStarter = problemFiles[0]?.content ?? '';
+
+    const { files: saved, contentChanged } = loadFilesFromStorage(itemId, problemIndex, currentStarter);
+    setContentRegenerated(contentChanged);
     if (saved) {
       setFilesContent(saved);
-      // Use first saved file that still exists in problemFiles, else first file
       const firstKnown = problemFiles.find((f) => saved[f.name] !== undefined)?.name
         ?? problemFiles[0]?.name ?? null;
       setActiveFile(firstKnown);
       return;
     }
 
-    // No saved draft — try latest DB submission for problem 0 (single main file)
+    // No saved draft — try latest DB submission (skip if content was regenerated)
     let defaults = buildDefaultFilesContent(problemFiles);
     if (
+      !contentChanged &&
       problemIndex === 0 &&
       latestSubmissionResponse?.data?.sourceCode &&
       problemFiles.length > 0
@@ -245,11 +329,17 @@ function LearnPageInner() {
     }
     setFilesContent(defaults);
     setActiveFile(problemFiles[0]?.name ?? null);
-  }, [itemId, problemIndex]);
+
+    // Remember starter code so we can detect future regeneration
+    saveStarterCode(itemId, problemIndex, currentStarter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemId, problemIndex, needsEditor]);
 
   // ── Sync isCompleted when DB data arrives ────────────────────────────────
   useEffect(() => {
     if (!itemId) return;
+    // Content was regenerated — old submission doesn't count
+    if (contentRegenerated) { setIsCompleted(false); return; }
     const itemCompleted = completedItemIds.has(itemId);
     let alreadyCompleted = false;
     if (isCodingItem) {
@@ -262,7 +352,7 @@ function LearnPageInner() {
       alreadyCompleted = itemCompleted;
     }
     setIsCompleted(alreadyCompleted);
-  }, [itemId, completedItemIdsResponse, latestSubmissionResponse, latestProjectSubmissionResponse, latestQuizSubmissionResponse]);
+  }, [itemId, contentRegenerated, completedItemIdsResponse, latestSubmissionResponse, latestProjectSubmissionResponse, latestQuizSubmissionResponse]);
 
   // ── Auto-save files draft to localStorage ────────────────────────────────
   useEffect(() => {
@@ -290,26 +380,12 @@ function LearnPageInner() {
     return Object.entries(filesContent).map(([name, content]) => ({ name, content }));
   }
 
-  async function handleRun() {
+  function handleRun() {
     if (!itemId || isRunning || isGrading) return;
     setOutputMode('run');
+    setRunResult(null);
     setIsRunning(true);
-    try {
-      const res = await submitCode({
-        entryId: itemId,
-        payload: {
-          sourceCode: filesContent[activeFile] ?? '',
-          language,
-          problemIndex,
-          files: buildSubmissionFiles(),
-        },
-      });
-      setRunResult(res?.data ?? res);
-    } catch (e) {
-      setRunResult({ stderr: String(e?.message ?? '실행 실패') });
-    } finally {
-      setIsRunning(false);
-    }
+    // Interactive terminal handles execution via WebSocket
   }
 
   async function handleGrade() {
@@ -331,7 +407,10 @@ function LearnPageInner() {
       const result = res?.data ?? res;
       setRunResult(result);
       // Sync hearts from response
-      if (result?.currentHearts != null) setHearts(result.currentHearts);
+      if (result?.currentHearts != null) {
+        if (result.currentHearts < hearts) setShowHeartLost(true);
+        setHearts(result.currentHearts);
+      }
       queryClient.invalidateQueries({ queryKey: ['latest-submission', itemId] });
       if (result?.submissionStatus === 'PASSED') {
         setPassedItemIds((prev) => { const n = new Set(prev); n.add(itemId); return n; });
@@ -374,9 +453,15 @@ function LearnPageInner() {
   async function handleCompleteQuiz({ answers, totalPoints, earnedPoints } = {}) {
     if (!itemId || isCompleted) return;
     try {
-      await submitQuiz({ itemId, payload: { answers: answers ?? [], totalPoints: totalPoints ?? 0, earnedPoints: earnedPoints ?? 0 } });
+      const res = await submitQuiz({ itemId, payload: { answers: answers ?? [], totalPoints: totalPoints ?? 0, earnedPoints: earnedPoints ?? 0 } });
+      const result = res?.data ?? res;
+      if (result?.currentHearts != null) setHearts(result.currentHearts);
       queryClient.invalidateQueries({ queryKey: ['latest-quiz-submission', itemId] });
     } catch (e) {
+      if (e?.status === 422) {
+        setShowHeartEmptyModal(true);
+        return;
+      }
       console.error('Quiz submission failed', e);
     }
     await handleComplete();
@@ -460,6 +545,9 @@ function LearnPageInner() {
     {/* XP gain animation */}
     {xpToastAmount > 0 && <XpGainToast key={xpToastKey} xp={xpToastAmount} />}
 
+    {/* Heart lost animation */}
+    {showHeartLost && <HeartLostToast hearts={hearts} onClose={() => setShowHeartLost(false)} />}
+
     <LearnLayout
       topBar={
         <LearnTopBar
@@ -506,6 +594,9 @@ function LearnPageInner() {
           totalProblems={totalProblems}
           onPrevProblem={() => setProblemIndex((i) => Math.max(0, i - 1))}
           onNextProblem={() => setProblemIndex((i) => Math.min(totalProblems - 1, i + 1))}
+          previousQuizSubmission={latestQuizSubmissionResponse?.data ?? null}
+          onSaveQuizProgress={isQuizItem ? handleSaveQuizProgress : null}
+          onWrongAnswer={handleHeartDeduction}
         />
       }
       rightPanel={
@@ -520,6 +611,8 @@ function LearnPageInner() {
             onCodeChange={handleCodeChange}
             runResult={runResult}
             outputMode={outputMode}
+            isRunning={isRunning}
+            onRunExit={() => setIsRunning(false)}
           />
         ) : isProjectRepo ? (
           <ProjectRepoPanel

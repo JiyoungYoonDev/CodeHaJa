@@ -2,6 +2,8 @@ package com.codehaja.domain.lectureitem.controller;
 
 import com.codehaja.common.api.ApiResponse;
 import com.codehaja.common.api.PageResponse;
+import com.codehaja.domain.coding.service.TestCaseRecalibrationService;
+import static com.codehaja.domain.coding.service.TestCaseRecalibrationService.RecalibrationResult;
 import com.codehaja.domain.lectureitem.dto.LectureItemDto;
 import com.codehaja.domain.lectureitem.entity.LectureItemType;
 import com.codehaja.domain.lectureitem.entity.ReviewStatus;
@@ -18,6 +20,7 @@ import java.util.List;
 public class LectureItemController {
 
     private final LectureItemService lectureItemService;
+    private final TestCaseRecalibrationService recalibrationService;
 
     @PostMapping("/api/lectures/{lectureId}/items")
     public ResponseEntity<ApiResponse<LectureItemDto.DetailResponse>> createLectureItem(
@@ -86,5 +89,31 @@ public class LectureItemController {
                 lectureItemService.reorderLectureItems(lectureId, requests);
 
         return ResponseEntity.ok(ApiResponse.ok("Lecture items reordered successfully.", response));
+    }
+
+    // ── Test case recalibration (admin) ──
+
+    @PostMapping("/api/lecture-items/{itemId}/recalibrate")
+    public ResponseEntity<ApiResponse<RecalibrationResult>> recalibrateItem(
+            @PathVariable Long itemId
+    ) {
+        RecalibrationResult result = recalibrationService.recalibrate(itemId);
+        return ResponseEntity.ok(ApiResponse.ok("Test cases recalibrated.", result));
+    }
+
+    @PostMapping("/api/lectures/{lectureId}/recalibrate")
+    public ResponseEntity<ApiResponse<List<RecalibrationResult>>> recalibrateLecture(
+            @PathVariable Long lectureId
+    ) {
+        List<RecalibrationResult> results = recalibrationService.recalibrateLecture(lectureId);
+        return ResponseEntity.ok(ApiResponse.ok("Lecture test cases recalibrated.", results));
+    }
+
+    @PostMapping("/api/courses/{courseId}/recalibrate")
+    public ResponseEntity<ApiResponse<List<RecalibrationResult>>> recalibrateCourse(
+            @PathVariable Long courseId
+    ) {
+        List<RecalibrationResult> results = recalibrationService.recalibrateCourse(courseId);
+        return ResponseEntity.ok(ApiResponse.ok("Course test cases recalibrated.", results));
     }
 }

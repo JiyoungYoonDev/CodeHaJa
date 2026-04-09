@@ -24,6 +24,7 @@ export default function CodeRunOutput({ result, mode }) {
     const passed = result.submissionStatus === 'PASSED';
     const passedCount = result.passedCount ?? 0;
     const totalCount = result.totalCount ?? 0;
+    const testCaseResults = result.testCaseResults ?? [];
 
     return (
       <div className='px-4 py-3 space-y-2'>
@@ -45,7 +46,42 @@ export default function CodeRunOutput({ result, mode }) {
             {passedCount}/{totalCount} tests passed
           </span>
         </div>
-        {result.stdout && (
+        {testCaseResults.length > 0 && (
+          <div className='space-y-1.5'>
+            {testCaseResults.map((tc) => (
+              <div
+                key={tc.index}
+                className={cn(
+                  'flex items-start gap-2 text-xs font-mono rounded px-3 py-1.5',
+                  tc.passed ? 'bg-emerald-950/30' : 'bg-rose-950/30'
+                )}
+              >
+                <span className='shrink-0 mt-0.5'>
+                  {tc.passed ? (
+                    <CheckCircle2 size={12} className='text-emerald-400' />
+                  ) : (
+                    <XCircle size={12} className='text-rose-400' />
+                  )}
+                </span>
+                <div className='min-w-0'>
+                  <span className={cn('font-semibold', tc.passed ? 'text-emerald-300' : 'text-rose-300')}>
+                    Test {tc.index}
+                  </span>
+                  {tc.input && (
+                    <span className='text-[#6a6a82] ml-2'>Input: {tc.input}</span>
+                  )}
+                  {!tc.passed && (
+                    <div className='mt-0.5 text-[#9090a8]'>
+                      <div>Expected: <span className='text-[#c0c0d8]'>{tc.expectedOutput}</span></div>
+                      <div>Got: <span className='text-rose-300'>{tc.actualOutput || '(no output)'}</span></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {testCaseResults.length === 0 && result.stdout && (
           <pre className='text-xs font-mono text-[#c0c0d8] bg-[#0d1117] rounded px-3 py-2 whitespace-pre-wrap max-h-32 overflow-auto'>
             {result.stdout}
           </pre>
